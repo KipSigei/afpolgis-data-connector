@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FetchGeoJSON</class>
- <widget class="QWidget" name="FetchGeoJSON">
+ <class>AfpolGISDialogBase</class>
+ <widget class="QWidget" name="AfpolGISDialogBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,11 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>AfpolGIS Data Connector</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>icon.png</normaloff>icon.png</iconset>
   </property>
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">

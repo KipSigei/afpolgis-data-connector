@@ -1,4 +1,4 @@
-# QGIS Ona API Connector Plugin
+# AfpolGIS Data Connector
 
 ![App Platform](/img/screenshot_1.png)
 
@@ -6,7 +6,7 @@
 
 ## Overview
 
-The **QGIS Ona API Connector Plugin** allows users to fetch GeoJSON data from the Ona API and load it directly into QGIS as a layer. The plugin fetches and saves the data asynchronously and supports handling multiple pages of data from the API.
+The **AfpolGIS Data Connector** allows users to fetch GeoJSON data from the Ona API and load it directly into QGIS as a layer. The plugin fetches and saves the data asynchronously and supports handling multiple pages of data from the API.
 
 ## Features
 
@@ -53,7 +53,7 @@ If you do not have pip, follow the installation instructions [here](https://pip.
 5. Browse for the .zip file you downloaded and click **Install Plugin**.
 
 ## Usage Instructions
-1. After installation, the plugin will appear in the QGIS toolbar or under **Plugins > QGIS Ona API Connector**.
+1. After installation, the plugin will appear in the QGIS toolbar or under **Plugins > AfpolGIS Data Connector**.
 2. Click the plugin icon to open the main dialog.
 3. Fill out the required fields:
    - **API Base URL**: Provide the base domain of the Ona API i.e api.whonghub.org.
