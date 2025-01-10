@@ -200,6 +200,9 @@ class AfpolGIS(QObject):
         # Connect the "Connect" button in the DHIS Tab to the corresponding fetch handler
         self.dlg.btnFetchDhisOrgUnits.clicked.connect(self.fetch_dhis_org_units_handler)
 
+        # Connect the "OK" button in the DHIS tab to the corresponding handler
+        self.dlg.dhisOkButton.clicked.connect(self.fetch_dhis_indicator_data_handler)
+
         # Connect page size slider on change
         # self.dlg.horizontalSlider.valueChanged.connect(self.update_slider_value_label)
 
@@ -263,6 +266,11 @@ class AfpolGIS(QObject):
         # DHIS Org units on change
         self.dlg.comboDhisOrgUnits.currentIndexChanged.connect(
             self.on_dhis_org_units_change
+        )
+
+        # DHIS DataSets on change
+        self.dlg.comboDhisDataSets.currentIndexChanged.connect(
+            self.on_dhis_datasets_change
         )
 
         self.dlg.onaOkButton.setEnabled(False)
@@ -501,6 +509,38 @@ class AfpolGIS(QObject):
 
     def clear_logs(self):
         self.dlg.app_logs.clear()
+    
+    def fetch_dhis_indicator_data_handler(self):
+        """
+        Fetch DHIS Indicator Data
+        """
+        api_url = self.dlg.dhis_api_url.text()
+        username = self.dlg.dhis_username.text()
+        password = self.dlg.dhisMLineEdit.text()
+        auth = HTTPBasicAuth(username, password)
+
+        selected_org_unit = self.dlg.comboDhisOrgUnits.currentData()
+        selected_period = self.dlg.comboDhisPeriod.currentText()
+        
+        curr_org_unit_id = None
+        curr_indicator_id = None
+
+        if curr_org_unit_id and curr_indicator_id:
+            params = [
+                ("dimension", f"dx:{curr_indicator_id}"),
+                ("dimension", f"ou:{curr_org_unit_id}"),
+                ("dimension", f"pe:{selected_period}")
+            ]
+
+            url = f"https://{api_url}/api/analytics.json"
+
+            response = self.fetch_with_retries(url, auth, params)
+
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    pass
+
 
     def fetch_dhis_org_units_handler(self):
         api_url = self.dlg.dhis_api_url.text()
@@ -508,15 +548,69 @@ class AfpolGIS(QObject):
         password = self.dlg.dhisMLineEdit.text()
         self.fetch_dhis_org_units(api_url, username, password)
 
+    def on_dhis_datasets_change(self):
+        api_url = self.dlg.dhis_api_url.text()
+        username = self.dlg.dhis_username.text()
+        password = self.dlg.dhisMLineEdit.text()
+
+        auth = HTTPBasicAuth(username, password)
+        dataset_data = self.dlg.comboDhisDataSets.currentData()
+        self.dlg.comboDhisIndicators.clear()
+        dataset_id = None
+
+        if dataset_data:
+            dataset_id = dataset_data.get("dataset_id")
+
+            if dataset_id:
+                params = {
+                    "fields": "name,id,indicators[id,name]"
+                }
+
+                url = f"https://{api_url}/api/dataSets/{dataset_id}"
+
+
+                response = self.fetch_with_retries(url, auth, params)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data:
+                        indicators = data.get("indicators")
+                        if indicators:
+                            for indicator in indicators:
+                                indicator_name = indicator.get("name")
+                                indicator_id = indicator.get("id")
+                                self.dlg.comboDhisIndicators.addItem(
+                                    indicator_name,
+                                    {
+                                        "indicator_id": indicator_id
+                                    }
+                                )
+                        else:
+                            self.dlg.app_logs.appendPlainText(f"No Available Indicators for selected Dataset {dataset_id}")
+                            self.iface.messageBar().pushMessage(
+                                "Notice",
+                                "No Available Indicators for Selected Dataset",
+                                level=Qgis.Warning,
+                                duration=10
+                            )
+                else:
+                    self.iface.messageBar().pushMessage(
+                        "Error",
+                        f"Error fetching data: Status Code {response.status_code}",
+                        level=Qgis.Critical,
+                        duration=10
+                    )
+
+
+
     def on_dhis_org_units_change(self):
         org_units_data = self.dlg.comboDhisOrgUnits.currentData()
         if org_units_data:
             curr_org_datasets = org_units_data.get("dataSets")
             if curr_org_datasets:
                 for dataset in curr_org_datasets:
-                    self.dlg.comboDhisDataSets.addItem(dataset.get("name"))
-
-        return
+                    self.dlg.comboDhisDataSets.addItem(dataset.get("name"), {
+                        "dataset_id": dataset.get("id")
+                    })
 
     def fetch_dhis_org_units(self, api_url, username, password):
         auth = HTTPBasicAuth(username, password)
@@ -548,7 +642,7 @@ class AfpolGIS(QObject):
             ]
 
             response = self.fetch_with_retries(url, auth, params)
-            self.dlg.app_logs.appendPlainText(f"Res URL - {response.url}")
+
             if response.status_code == 200:
                 data = response.json()
                 result = data.get("organisationUnits")
