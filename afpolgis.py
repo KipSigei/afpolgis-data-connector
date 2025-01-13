@@ -93,6 +93,7 @@ class AfpolGIS(QObject):
 
         # Initializing the dialog and other components
         self.dlg = AfpolGISDialog(option="GetODK")
+        self.dlg.tabWidget.setCurrentIndex(0)
 
         self.dlg.ComboDhisAdminLevels.addItems(
             ["Level 1", "Level 2", "Level 3", "Level 4", "Level 5"]
@@ -182,6 +183,7 @@ class AfpolGIS(QObject):
 
         # Connect the ODK "OK" button to the fetch_odk_form_data_clicked function
         self.dlg.odkOkButton.clicked.connect(self.fetch_odk_form_data_clicked)
+        self.dlg.odkCancelButton.clicked.connect(self.odk_cancel_button_clicked)
 
         # Connect the ODK "OK" button to the fetch_kobo_form_data_clicked function
         self.dlg.koboOkButton.clicked.connect(self.fetch_kobo_form_data_clicked)
@@ -506,6 +508,9 @@ class AfpolGIS(QObject):
     def cancel_button_clicked(self):
         self.reset_inputs()
         # self.dlg.close()
+    
+    def odk_cancel_button_clicked(self):
+        self.reset_odk_inputs()
 
     def clear_logs(self):
         self.dlg.app_logs.clear()
@@ -521,9 +526,16 @@ class AfpolGIS(QObject):
 
         selected_org_unit = self.dlg.comboDhisOrgUnits.currentData()
         selected_period = self.dlg.comboDhisPeriod.currentText()
+        indicator_data = self.dlg.comboDhisIndicators.currentData()
         
         curr_org_unit_id = None
         curr_indicator_id = None
+
+        if selected_org_unit:
+            curr_org_unit_id = selected_org_unit.get("id")
+
+        if indicator_data:
+            curr_indicator_id = indicator_data.get("indicator_id")
 
         if curr_org_unit_id and curr_indicator_id:
             params = [
@@ -539,7 +551,22 @@ class AfpolGIS(QObject):
             if response.status_code == 200:
                 data = response.json()
                 if data:
-                    pass
+                    rows = data.get("rows")
+                    if rows:
+                        self.load_dhis_data_to_qgis(data, curr_org_unit_id, curr_indicator_id)
+                    else:
+                        self.iface.messageBar().pushMessage(
+                            "Notice", "No Data Found for Selected Indicator",
+                            level=Qgis.Warning,
+                            duration=10
+                        )
+            else:
+                self.iface.messageBar().pushMessage(
+                    "Error",
+                    f"Error fetching data: {response.status_code}",
+                    level=Qgis.Critical,
+                    duration=10
+                )
 
 
     def fetch_dhis_org_units_handler(self):
@@ -1227,9 +1254,11 @@ class AfpolGIS(QObject):
         username = self.dlg.kobo_username.text()
         password = self.dlg.koboMLineEdit.text()
         selected_form = self.dlg.comboKoboForms.currentData()
-        asset_id = selected_form.get("asset_uid")
-        self.fetch_kobo_geo_fields(api_url, username, password, asset_id)
-        self.fetch_kobo_date_range_fields(api_url, username, password, asset_id)
+
+        if selected_form:
+            asset_id = selected_form.get("asset_uid")
+            self.fetch_kobo_geo_fields(api_url, username, password, asset_id)
+            self.fetch_kobo_date_range_fields(api_url, username, password, asset_id)
 
     def fetch_kobo_assets_handler(self):
         api_url = self.dlg.kobo_api_url.text()
@@ -1239,11 +1268,13 @@ class AfpolGIS(QObject):
 
     def fetch_kobo_assets(self, api_url, username, password):
         auth = HTTPBasicAuth(username, password)
+
         self.dlg.comboKoboForms.clear()
+        self.dlg.comboKoboGeoFields.clear()
+
         self.dlg.btnFetchKoboForms.setEnabled(False)
         self.dlg.btnFetchKoboForms.setText("Connecting...")
         self.dlg.btnFetchKoboForms.repaint()
-        time.sleep(0.5)
 
         url = f"https://{api_url}/api/v2/assets.json"
         response = self.fetch_with_retries(url, auth)
@@ -1276,7 +1307,6 @@ class AfpolGIS(QObject):
             self.dlg.btnFetchKoboForms.setEnabled(True)
             self.dlg.btnFetchKoboForms.setText("Connect")
             self.dlg.btnFetchKoboForms.repaint()
-            time.sleep(0.5)
 
         else:
             self.iface.messageBar().pushMessage(
@@ -1362,15 +1392,17 @@ class AfpolGIS(QObject):
 
     def on_odk_forms_combo_box_change(self):
         form_data = self.dlg.comboODKForms.currentData()
-        form_id_str = form_data.get("form_id")
-        project_id = form_data.get("project_id")
-        api_url = self.dlg.odk_api_url.text()
-        username = self.dlg.odk_username.text()
-        password = self.dlg.odkmLineEdit.text()
-        self.fetch_odk_geo_fields(api_url, username, password, project_id, form_id_str)
-        self.fetch_odk_date_range_fields(
-            api_url, username, password, project_id, form_id_str
-        )
+
+        if form_data:
+            form_id_str = form_data.get("form_id")
+            project_id = form_data.get("project_id")
+            api_url = self.dlg.odk_api_url.text()
+            username = self.dlg.odk_username.text()
+            password = self.dlg.odkmLineEdit.text()
+            self.fetch_odk_geo_fields(api_url, username, password, project_id, form_id_str)
+            self.fetch_odk_date_range_fields(
+                api_url, username, password, project_id, form_id_str
+            )
 
         # fetch time fields to activate date range filters
 
@@ -1514,6 +1546,7 @@ class AfpolGIS(QObject):
         self.fetch_ona_forms_worker = FetchOnaFormsThread(
             url, auth, params=None, headers=None
         )
+        self.dlg.app_logs.appendPlainText(f"The URL: {url}")
 
         # Connect signals to the handler methods
         self.fetch_ona_forms_worker.data_fetched.connect(
@@ -1582,27 +1615,29 @@ class AfpolGIS(QObject):
         password = self.dlg.onaMLineEdit.text()
 
         auth = HTTPBasicAuth(username, password)
-        url = f"https://{api_url}/api/v1/forms/{formID}/versions"
 
-        self.fetch_ona_geo_fields_worker = FetchOnaGeoFieldsThread(
-            url, auth, params=None, headers=None, formID=formID
-        )
+        if formID:
+            url = f"https://{api_url}/api/v1/forms/{formID}/versions"
 
-        self.fetch_ona_geo_fields_worker.data_fetched.connect(
-            self.handle_geo_fields_fetched
-        )
-        self.fetch_ona_geo_fields_worker.progress_updated.connect(
-            self.handle_geo_fields_progress
-        )
-        self.fetch_ona_geo_fields_worker.count_and_date_fields_fetched.connect(
-            self.handle_date_and_count_fields
-        )
-        self.fetch_ona_geo_fields_worker.count_and_date_fields_error_occurred.connect(
-            self.handle_date_and_count_fields_error
-        )
-        self.fetch_ona_geo_fields_worker.error_occurred.connect(self.handle_fetch_error)
-        self.fetch_ona_geo_fields_worker.status_error.connect(self.handle_status_error)
-        self.fetch_ona_geo_fields_worker.start()
+            self.fetch_ona_geo_fields_worker = FetchOnaGeoFieldsThread(
+                url, auth, params=None, headers=None, formID=formID
+            )
+
+            self.fetch_ona_geo_fields_worker.data_fetched.connect(
+                self.handle_geo_fields_fetched
+            )
+            self.fetch_ona_geo_fields_worker.progress_updated.connect(
+                self.handle_geo_fields_progress
+            )
+            self.fetch_ona_geo_fields_worker.count_and_date_fields_fetched.connect(
+                self.handle_date_and_count_fields
+            )
+            self.fetch_ona_geo_fields_worker.count_and_date_fields_error_occurred.connect(
+                self.handle_date_and_count_fields_error
+            )
+            self.fetch_ona_geo_fields_worker.error_occurred.connect(self.handle_fetch_error)
+            self.fetch_ona_geo_fields_worker.status_error.connect(self.handle_status_error)
+            self.fetch_ona_geo_fields_worker.start()
 
     def fetch_odk_forms_handler(self):
         api_url = self.dlg.odk_api_url.text()
@@ -1645,6 +1680,8 @@ class AfpolGIS(QObject):
     def fetch_odk_projects(self, api_url, username, password):
         auth = HTTPBasicAuth(username, password)
         self.dlg.comboODKForms.clear()
+        self.dlg.comboODKGeoFields.clear()
+
         self.dlg.btnFetchODKForms.setEnabled(False)
         self.dlg.btnFetchODKForms.setText("Connecting...")
         self.dlg.btnFetchODKForms.repaint()
@@ -1718,6 +1755,12 @@ class AfpolGIS(QObject):
 
     def fetch_odk_form_data_clicked(self):
         # Extract parameters from the dialog
+
+        # disable OK button
+        self.dlg.odkOkButton.setEnabled(False)
+        self.dlg.odkProgressBar.setValue(0)
+        self.dlg.odkOkButton.repaint()
+
         api_url = self.dlg.odk_api_url.text()
         form_id_str = self.dlg.comboODKForms.currentText()
         username = self.dlg.odk_username.text()
@@ -1934,7 +1977,7 @@ class AfpolGIS(QObject):
             data = response.json()
             data_list = data.get("value")
             if data_list:
-                self.dlg.odkProgressBar.setvalue(100)
+                self.dlg.odkProgressBar.setValue(100)
                 for datum in data_list:
                     flat_data = self.flatten_odk_json(datum)
                     feature = self.get_odk_geo_data(flat_data, geo_field)
@@ -2040,10 +2083,12 @@ class AfpolGIS(QObject):
         )
 
     def handle_date_and_count_fields(self, data):
-        if data:
+        if isinstance(data, dict):
             self.data_count = data.get("count")
             get_from_date = data.get("from_date")
             get_to_date = data.get("to_date")
+
+            self.dlg.app_logs.appendPlainText(f"Submissions Count: {self.data_count}")
 
             from_dt = datetime.fromisoformat(get_from_date).astimezone(timezone.utc)
             to_dt = datetime.fromisoformat(get_to_date).astimezone(timezone.utc)
@@ -2086,13 +2131,24 @@ class AfpolGIS(QObject):
         )
 
     def handle_ona_data_fetch_progress(self, data):
-        self.dlg.app_logs.appendPlainText(f"data")
         if data:
             if isinstance(data, dict):
                 page = data.get("curr_page")
                 total_pages = data.get("total_pages")
                 progress = (int(page) / int(total_pages)) * 100 if int(total_pages) > 1 else 100
                 self.dlg.onaProgressBar.setValue(math.ceil(progress))
+            elif isinstance(data, str):
+                self.dlg.app_logs.appendPlainText(data)
+
+    def handle_no_json_data(self, msg):
+        self.dlg.app_logs.appendPlainText(f"Warning - {msg}")
+        self.iface.messageBar().pushMessage(
+            "Notice",
+            msg,
+            level=Qgis.Warning,
+            duration=10
+        )
+        self.dlg.onaOkButton.setEnabled(True)
 
     def ona_fetch_data_sync_enabled(self):
         # disable OK button during sync
@@ -2151,6 +2207,7 @@ class AfpolGIS(QObject):
         self.ona_worker.count_and_date_fields_fetched.connect(
             self.handle_date_and_count_fields
         )
+        self.ona_worker.no_data.connect(self.handle_no_json_data)
         self.ona_worker.count_and_date_fields_error_occurred.connect(
             self.handle_date_and_count_fields_error
         )
@@ -2221,6 +2278,7 @@ class AfpolGIS(QObject):
         self.ona_worker.count_and_date_fields_fetched.connect(
             self.handle_date_and_count_fields
         )
+        self.ona_worker.no_data.connect(self.handle_no_json_data)
         self.ona_worker.count_and_date_fields_error_occurred.connect(
             self.handle_date_and_count_fields_error
         )
@@ -2695,6 +2753,73 @@ class AfpolGIS(QObject):
             return f"MULTIPOLYGON ({', '.join(polygons)})"
         else:
             raise ValueError(f"Unsupported geometry type: {geom_type}")
+    
+    def rename_dhis_row_entries(self, row, metadata_items, org_id, indicator_id):
+        new_row = []
+        for elem in row:
+            if elem == org_id:
+                new_row.append(
+                    metadata_items.get(org_id).get("name")
+                )
+            elif elem == indicator_id:
+                new_row.append(
+                    metadata_items.get(indicator_id).get("name")
+                )
+            else:
+                new_row.append(elem)
+        
+        return new_row
+
+    def load_dhis_data_to_qgis(self, analytics_data, curr_org_unit_id, curr_indicator_id):
+        """
+        Add DHIS2 analytics data as a non-spatial layer to QGIS.
+        """
+        if not analytics_data:
+            print("No analytics data provided.")
+            return
+
+        # Extract headers and rows
+        headers = []
+        rows = analytics_data.get("rows", [])
+        metadata = analytics_data.get("metaData")
+
+
+        faux_headers = [header["name"] for header in analytics_data.get("headers", [])]
+        meta_items = metadata.get("items")
+        for faux_h in faux_headers:
+            if faux_h == "dx":
+                headers.append("Indicator")
+            elif faux_h == "value":
+                headers.append(
+                    "Value"
+                )
+            else:
+                headers.append(
+                    meta_items.get(faux_h).get("name") 
+                )
+
+        # Create a non-spatial memory layer
+        layer = QgsVectorLayer("None", "DHIS2 Analytics Data", "memory")
+        provider = layer.dataProvider()
+
+        # Add fields (columns) based on headers
+        fields = [QgsField(header, QVariant.String) for header in headers]
+        provider.addAttributes(fields)
+        layer.updateFields()
+
+        # Add features (rows)
+        features = []
+        for row in rows:
+            feature = QgsFeature()
+            new_row = self.rename_dhis_row_entries(row, meta_items, curr_org_unit_id, curr_indicator_id)
+            feature.setAttributes(new_row)
+            features.append(feature)
+
+        provider.addFeatures(features)
+        layer.updateExtents()
+
+        # Add the layer to the QGIS project
+        QgsProject.instance().addMapLayer(layer)
 
     def load_data_to_qgis(self, geojson_data, formID, geo_field):
         """Load the fetched GeoJSON data into QGIS as a layer."""
@@ -2866,3 +2991,14 @@ class AfpolGIS(QObject):
         self.dlg.btnFetchOnaForms.setEnabled(True)
 
         self.dlg.comboOnaForms.setEnabled(True)
+
+    def reset_odk_inputs(self):
+        if self.odk_sync_timer.isActive():
+            self.odk_sync_timer.stop()
+
+        self.dlg.app_logs.clear()
+        self.dlg.odkProgressBar.setValue(0)
+
+        self.dlg.odkOkButton.setEnabled(True)
+        self.dlg.btnFetchODKForms.setEnabled(True)
+        self.dlg.comboODKForms.setEnabled(True)
