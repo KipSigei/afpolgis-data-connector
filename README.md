@@ -44,7 +44,7 @@ If the automatic installation doesn't work, you will need to manually install th
 1. After installation, the plugin will appear in the QGIS toolbar or under **Plugins > AfpolGIS Data Connector**.
 2. Click the plugin icon to open the main dialog.
 3. Fill out the required fields:
-   - Input your crednetials
+   - Input your credentials
    - Depending on the selected platform tab, you have selection options that you will go through depending on the use case
 4. Click **OK** to initiate the data fetch process. The plugin will:
    - Display a progress bar showing the fetching status.
@@ -54,4 +54,5 @@ If the automatic installation doesn't work, you will need to manually install th
 
 ## Next Steps
 1. Add a way to save credentials (username/password) so that they can be pre-loaded to avoid having to re-enter when relaunching the application
-2. Create a similar plugin for ArcGIS Pro
+2. The sync functionality currently works per layer per platform. The plan is to add functionality to have the sync work for all OnaData, Kobo or ODK layers added to QGIS
+3. Create a similar plugin for ArcGIS Pro
