@@ -63,6 +63,7 @@ class OnaRequestThread(QThread):
     data_fetched = pyqtSignal(object)  # Signal to emit the response
     progress_updated = pyqtSignal(object)
     error_occurred = pyqtSignal(object)  # Signal to emit errors
+    no_data = pyqtSignal(object)
 
     count_and_date_fields_fetched = pyqtSignal(object)
     count_and_date_fields_error_occurred = pyqtSignal(str)
@@ -125,13 +126,21 @@ class OnaRequestThread(QThread):
                         data = res.json()
                         if data:
                             combined_results.extend(data)
-                self.data_fetched.emit(combined_results)
+                        else:
+                            self.no_data.emit("No Data Available for selected Form")
+
+                if combined_results:
+                    self.data_fetched.emit(combined_results)
+                else:
+                    self.no_data.emit("No Data Available for selected Form")
             else:  # Handle unpaginated requests
                 self.progress_updated.emit("Fetching unpaginated data...")
                 res = fetch_data(self.url, self.auth, self.params, callback=self.error_occurred)
                 data = res.json()
                 if data:
                     self.data_fetched.emit(data)
+                else:
+                    self.no_data.emit("No Data Available for selected Form")
 
         except Exception as e:
             self.error_occurred.emit(str(e))
@@ -361,7 +370,7 @@ class FetchODKFormsThread(QThread):
         self.backoff_factor = 0.2
         self.total_records = total_records
         self.records_per_page = records_per_page
-        self.formID = formIDk
+        self.formID = formID
 
 
                 
