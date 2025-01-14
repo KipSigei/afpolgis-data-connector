@@ -276,10 +276,16 @@ class AfpolGIS(QObject):
             self.on_dhis_datasets_change
         )
 
+        # DHIS Indicators on change
+        self.dlg.comboDhisIndicators.currentIndexChanged.connect(
+            self.on_dhis_indicators_change
+        )
+
         self.dlg.onaOkButton.setEnabled(False)
         self.dlg.odkOkButton.setEnabled(False)
         self.dlg.koboOkButton.setEnabled(False)
         self.dlg.gtsOkButton.setEnabled(False)
+        self.dlg.dhisOkButton.setEnabled(False)
 
         # password visibility
         self.showPassword = False
@@ -523,6 +529,10 @@ class AfpolGIS(QObject):
         """
         Fetch DHIS Indicator Data
         """
+        # disable buttun during fetch
+        self.dlg.dhisOkButton.setEnabled(False)
+        self.dlg.dhisOkButton.repaint()
+
         api_url = self.dlg.dhis_api_url.text()
         username = self.dlg.dhis_username.text()
         password = self.dlg.dhisMLineEdit.text()
@@ -558,12 +568,14 @@ class AfpolGIS(QObject):
                     rows = data.get("rows")
                     if rows:
                         self.load_dhis_data_to_qgis(data, curr_org_unit_id, curr_indicator_id)
+                        self.dlg.dhisOkButton.setEnabled(True)
                     else:
                         self.iface.messageBar().pushMessage(
                             "Notice", "No Data Found for Selected Indicator",
                             level=Qgis.Warning,
                             duration=10
                         )
+                        self.dlg.dhisOkButton.setEnabled(True)
             else:
                 self.iface.messageBar().pushMessage(
                     "Error",
@@ -571,6 +583,7 @@ class AfpolGIS(QObject):
                     level=Qgis.Critical,
                     duration=10
                 )
+                self.dlg.dhisOkButton.setEnabled(True)
 
 
     def fetch_dhis_org_units_handler(self):
@@ -578,6 +591,11 @@ class AfpolGIS(QObject):
         username = self.dlg.dhis_username.text()
         password = self.dlg.dhisMLineEdit.text()
         self.fetch_dhis_org_units(api_url, username, password)
+
+    def on_dhis_indicators_change(self):
+        indicator_data = self.dlg.comboDhisIndicators.currentData()
+        if indicator_data:
+            self.dlg.dhisOkButton.setEnabled(True)
 
     def on_dhis_datasets_change(self):
         api_url = self.dlg.dhis_api_url.text()
@@ -647,9 +665,15 @@ class AfpolGIS(QObject):
         auth = HTTPBasicAuth(username, password)
         adm_level = self.dlg.ComboDhisAdminLevels.currentText()
         cleaned_adm_lvl = adm_level.split(" ")[-1]
+
         self.dlg.comboDhisOrgUnits.clear()
         self.dlg.comboDhisDataSets.clear()
+        self.dlg.comboDhisIndicators.clear()
+
         self.dlg.btnFetchDhisOrgUnits.setEnabled(False)
+        self.dlg.dhisOkButton.setEnabled(False)
+        self.dlg.dhisOkButton.repaint()
+
         self.dlg.btnFetchDhisOrgUnits.setText("Connecting...")
         self.dlg.btnFetchDhisOrgUnits.repaint()
 
@@ -732,12 +756,13 @@ class AfpolGIS(QObject):
         api_url = self.dlg.gts_api_url.text()
         username = self.dlg.gts_username.text()
         password = self.dlg.gtsMLineEdit.text()
+
+        # Disable OK button
+        self.dlg.gtsOkButton.setEnabled(False)
+    
         selected_tracking_round = self.dlg.comboGTSTrackingRounds.currentData()
 
         tracking_round_data = self.dlg.comboGTSFieldActivities.currentData()
-        self.dlg.app_logs.appendPlainText(
-            f"Selected Track - {selected_tracking_round}, Tracking round: {tracking_round_data}"
-        )
 
         if selected_tracking_round and tracking_round_data:
             single_tracking_url = selected_tracking_round.get("url")
@@ -745,7 +770,6 @@ class AfpolGIS(QObject):
 
             url = f"https://{api_url}/fastapi/odata/v1/{single_tracking_url}"
             auth = HTTPBasicAuth(username, password)
-            response = self.fetch_with_retries(url, auth)
 
             feature_collection = {
                 "type": "FeatureCollection",
@@ -2818,7 +2842,10 @@ class AfpolGIS(QObject):
                 )
 
         # Create a non-spatial memory layer
-        layer = QgsVectorLayer("None", "DHIS2 Analytics Data", "memory")
+        indicator_text = self.dlg.comboDhisIndicators.currentText()
+        period_text = self.dlg.comboDhisPeriod.currentText()
+        layer = QgsVectorLayer("None", f"{indicator_text}_{period_text}", "memory")
+
         provider = layer.dataProvider()
 
         # Add fields (columns) based on headers
