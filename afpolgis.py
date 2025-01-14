@@ -515,16 +515,16 @@ class AfpolGIS(QObject):
     def cancel_button_clicked(self):
         self.reset_inputs()
         # self.dlg.close()
-    
+
     def odk_cancel_button_clicked(self):
         self.reset_odk_inputs()
-    
+
     def kobo_cancel_button_clicked(self):
         self.reset_kobo_inputs()
 
     def clear_logs(self):
         self.dlg.app_logs.clear()
-    
+
     def fetch_dhis_indicator_data_handler(self):
         """
         Fetch DHIS Indicator Data
@@ -541,7 +541,7 @@ class AfpolGIS(QObject):
         selected_org_unit = self.dlg.comboDhisOrgUnits.currentData()
         selected_period = self.dlg.comboDhisPeriod.currentText()
         indicator_data = self.dlg.comboDhisIndicators.currentData()
-        
+
         curr_org_unit_id = None
         curr_indicator_id = None
 
@@ -555,7 +555,7 @@ class AfpolGIS(QObject):
             params = [
                 ("dimension", f"dx:{curr_indicator_id}"),
                 ("dimension", f"ou:{curr_org_unit_id}"),
-                ("dimension", f"pe:{selected_period}")
+                ("dimension", f"pe:{selected_period}"),
             ]
 
             url = f"https://{api_url}/api/analytics.json"
@@ -567,13 +567,16 @@ class AfpolGIS(QObject):
                 if data:
                     rows = data.get("rows")
                     if rows:
-                        self.load_dhis_data_to_qgis(data, curr_org_unit_id, curr_indicator_id)
+                        self.load_dhis_data_to_qgis(
+                            data, curr_org_unit_id, curr_indicator_id
+                        )
                         self.dlg.dhisOkButton.setEnabled(True)
                     else:
                         self.iface.messageBar().pushMessage(
-                            "Notice", "No Data Found for Selected Indicator",
+                            "Notice",
+                            "No Data Found for Selected Indicator",
                             level=Qgis.Warning,
-                            duration=10
+                            duration=10,
                         )
                         self.dlg.dhisOkButton.setEnabled(True)
             else:
@@ -581,10 +584,9 @@ class AfpolGIS(QObject):
                     "Error",
                     f"Error fetching data: {response.status_code}",
                     level=Qgis.Critical,
-                    duration=10
+                    duration=10,
                 )
                 self.dlg.dhisOkButton.setEnabled(True)
-
 
     def fetch_dhis_org_units_handler(self):
         api_url = self.dlg.dhis_api_url.text()
@@ -611,12 +613,9 @@ class AfpolGIS(QObject):
             dataset_id = dataset_data.get("dataset_id")
 
             if dataset_id:
-                params = {
-                    "fields": "name,id,indicators[id,name]"
-                }
+                params = {"fields": "name,id,indicators[id,name]"}
 
                 url = f"https://{api_url}/api/dataSets/{dataset_id}"
-
 
                 response = self.fetch_with_retries(url, auth, params)
                 if response.status_code == 200:
@@ -628,28 +627,25 @@ class AfpolGIS(QObject):
                                 indicator_name = indicator.get("name")
                                 indicator_id = indicator.get("id")
                                 self.dlg.comboDhisIndicators.addItem(
-                                    indicator_name,
-                                    {
-                                        "indicator_id": indicator_id
-                                    }
+                                    indicator_name, {"indicator_id": indicator_id}
                                 )
                         else:
-                            self.dlg.app_logs.appendPlainText(f"No Available Indicators for selected Dataset {dataset_id}")
+                            self.dlg.app_logs.appendPlainText(
+                                f"No Available Indicators for selected Dataset {dataset_id}"
+                            )
                             self.iface.messageBar().pushMessage(
                                 "Notice",
                                 "No Available Indicators for Selected Dataset",
                                 level=Qgis.Warning,
-                                duration=10
+                                duration=10,
                             )
                 else:
                     self.iface.messageBar().pushMessage(
                         "Error",
                         f"Error fetching data: Status Code {response.status_code}",
                         level=Qgis.Critical,
-                        duration=10
+                        duration=10,
                     )
-
-
 
     def on_dhis_org_units_change(self):
         org_units_data = self.dlg.comboDhisOrgUnits.currentData()
@@ -657,9 +653,9 @@ class AfpolGIS(QObject):
             curr_org_datasets = org_units_data.get("dataSets")
             if curr_org_datasets:
                 for dataset in curr_org_datasets:
-                    self.dlg.comboDhisDataSets.addItem(dataset.get("name"), {
-                        "dataset_id": dataset.get("id")
-                    })
+                    self.dlg.comboDhisDataSets.addItem(
+                        dataset.get("name"), {"dataset_id": dataset.get("id")}
+                    )
 
     def fetch_dhis_org_units(self, api_url, username, password):
         auth = HTTPBasicAuth(username, password)
@@ -759,7 +755,7 @@ class AfpolGIS(QObject):
 
         # Disable OK button
         self.dlg.gtsOkButton.setEnabled(False)
-    
+
         selected_tracking_round = self.dlg.comboGTSTrackingRounds.currentData()
 
         tracking_round_data = self.dlg.comboGTSFieldActivities.currentData()
@@ -1433,7 +1429,9 @@ class AfpolGIS(QObject):
             api_url = self.dlg.odk_api_url.text()
             username = self.dlg.odk_username.text()
             password = self.dlg.odkmLineEdit.text()
-            self.fetch_odk_geo_fields(api_url, username, password, project_id, form_id_str)
+            self.fetch_odk_geo_fields(
+                api_url, username, password, project_id, form_id_str
+            )
             self.fetch_odk_date_range_fields(
                 api_url, username, password, project_id, form_id_str
             )
@@ -1617,14 +1615,16 @@ class AfpolGIS(QObject):
             self.dlg.app_logs.appendPlainText(
                 f"Number of Geo Fields Found: {len(geo_fields_set)} \n"
             )
-    
+
     def handle_geo_fields_progress(self, data):
         if isinstance(data, str):
             self.dlg.app_logs.appendPlainText(data)
         elif isinstance(data, dict):
             page = data.get("curr_page")
             total_pages = data.get("total_pages")
-            progress = (int(page) / int(total_pages)) * 100 if int(total_pages) > 1 else 100
+            progress = (
+                (int(page) / int(total_pages)) * 100 if int(total_pages) > 1 else 100
+            )
             self.dlg.onaProgressBar.setValue(math.ceil(progress))
 
     def fetch_ona_form_geo_fields(self):
@@ -1669,8 +1669,12 @@ class AfpolGIS(QObject):
             self.fetch_ona_geo_fields_worker.count_and_date_fields_error_occurred.connect(
                 self.handle_date_and_count_fields_error
             )
-            self.fetch_ona_geo_fields_worker.error_occurred.connect(self.handle_fetch_error)
-            self.fetch_ona_geo_fields_worker.status_error.connect(self.handle_status_error)
+            self.fetch_ona_geo_fields_worker.error_occurred.connect(
+                self.handle_fetch_error
+            )
+            self.fetch_ona_geo_fields_worker.status_error.connect(
+                self.handle_status_error
+            )
             self.fetch_ona_geo_fields_worker.start()
 
     def fetch_odk_forms_handler(self):
@@ -1770,7 +1774,12 @@ class AfpolGIS(QObject):
             odk_to_date = self.dlg.ODKDateTimeTo.date()
 
             from_dt = datetime(
-                odk_from_date.year(), odk_from_date.month(), odk_from_date.day(), 0, 0, 0
+                odk_from_date.year(),
+                odk_from_date.month(),
+                odk_from_date.day(),
+                0,
+                0,
+                0,
             )  # 12:00 AM
             to_dt = datetime(
                 odk_to_date.year(), odk_to_date.month(), odk_to_date.day(), 23, 59, 59
@@ -2102,7 +2111,9 @@ class AfpolGIS(QObject):
                 and len(feature_collection["features"]) > 0
             ):
                 # self.dlg.onaProgressBar.setValue(100)
-                self.dlg.app_logs.appendPlainText("Building GeoJSON Complete. Adding Layer to Map...\n")
+                self.dlg.app_logs.appendPlainText(
+                    "Building GeoJSON Complete. Adding Layer to Map...\n"
+                )
                 self.load_data_to_qgis(feature_collection, formID, geo_field)
                 if not self.ona_sync_timer.isActive():
                     self.dlg.onaOkButton.setEnabled(True)
@@ -2178,7 +2189,11 @@ class AfpolGIS(QObject):
             if isinstance(data, dict):
                 page = data.get("curr_page")
                 total_pages = data.get("total_pages")
-                progress = (int(page) / int(total_pages)) * 100 if int(total_pages) > 1 else 100
+                progress = (
+                    (int(page) / int(total_pages)) * 100
+                    if int(total_pages) > 1
+                    else 100
+                )
                 self.dlg.onaProgressBar.setValue(math.ceil(progress))
             elif isinstance(data, str):
                 self.dlg.app_logs.appendPlainText(data)
@@ -2186,10 +2201,7 @@ class AfpolGIS(QObject):
     def handle_no_json_data(self, msg):
         self.dlg.app_logs.appendPlainText(f"Warning - {msg}")
         self.iface.messageBar().pushMessage(
-            "Notice",
-            msg,
-            level=Qgis.Warning,
-            duration=10
+            "Notice", msg, level=Qgis.Warning, duration=10
         )
         self.dlg.onaOkButton.setEnabled(True)
 
@@ -2229,7 +2241,7 @@ class AfpolGIS(QObject):
                     }
                 }
             )
-        
+
         if formID:
             if hasattr(self, "vlayer"):
                 if self.vlayer.get("layer"):
@@ -2247,7 +2259,9 @@ class AfpolGIS(QObject):
 
             # Connect signals to the handler methods
             self.ona_worker.data_fetched.connect(self.handle_data_fetched)
-            self.ona_worker.progress_updated.connect(self.handle_ona_data_fetch_progress)
+            self.ona_worker.progress_updated.connect(
+                self.handle_ona_data_fetch_progress
+            )
             self.ona_worker.count_and_date_fields_fetched.connect(
                 self.handle_date_and_count_fields
             )
@@ -2316,9 +2330,7 @@ class AfpolGIS(QObject):
 
         # Connect signals to the handler methods
         self.ona_worker.data_fetched.connect(self.handle_data_fetched)
-        self.ona_worker.progress_updated.connect(
-            self.handle_ona_data_fetch_progress
-        )
+        self.ona_worker.progress_updated.connect(self.handle_ona_data_fetch_progress)
         self.ona_worker.count_and_date_fields_fetched.connect(
             self.handle_date_and_count_fields
         )
@@ -2797,24 +2809,22 @@ class AfpolGIS(QObject):
             return f"MULTIPOLYGON ({', '.join(polygons)})"
         else:
             raise ValueError(f"Unsupported geometry type: {geom_type}")
-    
+
     def rename_dhis_row_entries(self, row, metadata_items, org_id, indicator_id):
         new_row = []
         for elem in row:
             if elem == org_id:
-                new_row.append(
-                    metadata_items.get(org_id).get("name")
-                )
+                new_row.append(metadata_items.get(org_id).get("name"))
             elif elem == indicator_id:
-                new_row.append(
-                    metadata_items.get(indicator_id).get("name")
-                )
+                new_row.append(metadata_items.get(indicator_id).get("name"))
             else:
                 new_row.append(elem)
-        
+
         return new_row
 
-    def load_dhis_data_to_qgis(self, analytics_data, curr_org_unit_id, curr_indicator_id):
+    def load_dhis_data_to_qgis(
+        self, analytics_data, curr_org_unit_id, curr_indicator_id
+    ):
         """
         Add DHIS2 analytics data as a non-spatial layer to QGIS.
         """
@@ -2827,20 +2837,15 @@ class AfpolGIS(QObject):
         rows = analytics_data.get("rows", [])
         metadata = analytics_data.get("metaData")
 
-
         faux_headers = [header["name"] for header in analytics_data.get("headers", [])]
         meta_items = metadata.get("items")
         for faux_h in faux_headers:
             if faux_h == "dx":
                 headers.append("Indicator")
             elif faux_h == "value":
-                headers.append(
-                    "Value"
-                )
+                headers.append("Value")
             else:
-                headers.append(
-                    meta_items.get(faux_h).get("name") 
-                )
+                headers.append(meta_items.get(faux_h).get("name"))
 
         # Create a non-spatial memory layer
         indicator_text = self.dlg.comboDhisIndicators.currentText()
@@ -2858,7 +2863,9 @@ class AfpolGIS(QObject):
         features = []
         for row in rows:
             feature = QgsFeature()
-            new_row = self.rename_dhis_row_entries(row, meta_items, curr_org_unit_id, curr_indicator_id)
+            new_row = self.rename_dhis_row_entries(
+                row, meta_items, curr_org_unit_id, curr_indicator_id
+            )
             feature.setAttributes(new_row)
             features.append(feature)
 
@@ -2887,15 +2894,14 @@ class AfpolGIS(QObject):
             for layer in QgsProject.instance().mapLayers().values():
                 if layer.name() == layer_name:
                     existing_layer = True
-                    if self.vlayer \
-                        and self.vlayer.get("layer") \
-                            and not self.vlayer.get("syncData") \
-                            and existing_layer:
+                    if (
+                        self.vlayer
+                        and self.vlayer.get("layer")
+                        and not self.vlayer.get("syncData")
+                        and existing_layer
+                    ):
                         self.iface.messageBar().pushMessage(
-                            "Notice",
-                            "Layer Exists",
-                            level=Qgis.Warning,
-                            duration=5
+                            "Notice", "Layer Exists", level=Qgis.Warning, duration=5
                         )
 
             vlayer = QgsVectorLayer(
@@ -2915,7 +2921,9 @@ class AfpolGIS(QObject):
                 ):
                     self.vlayer = {"syncData": True, "layer": vlayer}
                     self.update_layer_data(layer_name, geojson_data, vlayer)
-                elif (not self.vlayer.get("layer") or not self.vlayer.get("syncData")) and not existing_layer:
+                elif (
+                    not self.vlayer.get("layer") or not self.vlayer.get("syncData")
+                ) and not existing_layer:
                     # Start editing to add fields and features
                     vlayer.startEditing()
                     prop_keys = [
@@ -2982,7 +2990,7 @@ class AfpolGIS(QObject):
         layers = QgsProject.instance().mapLayersByName(layer_name)
 
         if layers:
-            vlayer = layers[0] 
+            vlayer = layers[0]
 
             vlayer.startEditing()
 
@@ -3028,24 +3036,32 @@ class AfpolGIS(QObject):
             # Commit changes and refresh the layer
             vlayer.commitChanges()
             vlayer.triggerRepaint()
-            self.dlg.app_logs.appendPlainText(f"Layer {layer_name} Updated Successfully!")
+            self.dlg.app_logs.appendPlainText(
+                f"Layer {layer_name} Updated Successfully!"
+            )
         else:
             self.iface.messageBar().pushMessage(
                 "Notice",
                 f"No Available Layers to be Updated",
                 level=Qgis.Warning,
-                duration=10
+                duration=10,
             )
-    
+
     # stop workers if they are running
     def stop_workers(self):
         if hasattr(self, "ona_worker") and self.ona_worker.isRunning():
             self.ona_worker.quit()
 
-        if hasattr(self, "fetch_ona_forms_worker") and self.fetch_ona_forms_worker.isRunning():
+        if (
+            hasattr(self, "fetch_ona_forms_worker")
+            and self.fetch_ona_forms_worker.isRunning()
+        ):
             self.fetch_ona_forms_worker.quit()
 
-        if hasattr(self, "fetch_ona_geo_fields_worker") and self.fetch_ona_geo_fields_worker.isRunning():
+        if (
+            hasattr(self, "fetch_ona_geo_fields_worker")
+            and self.fetch_ona_geo_fields_worker.isRunning()
+        ):
             self.fetch_ona_geo_fields_worker.quit()
 
     def reset_inputs(self):
@@ -3077,7 +3093,7 @@ class AfpolGIS(QObject):
         self.dlg.odkOkButton.setEnabled(True)
         self.dlg.btnFetchODKForms.setEnabled(True)
         self.dlg.comboODKForms.setEnabled(True)
-    
+
     def reset_kobo_inputs(self):
         if self.kobo_sync_timer.isActive():
             self.kobo_sync_timer.stop()
