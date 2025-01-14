@@ -533,9 +533,9 @@ class Ui_AfpolGISDialogBase(object):
         self.label_5 = QtWidgets.QLabel(self.formGroup_7)
         self.label_5.setObjectName("label_5")
         self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_5)
-        self.comboDhisDataElements = QtWidgets.QComboBox(self.formGroup_7)
-        self.comboDhisDataElements.setObjectName("comboDhisDataElements")
-        self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.comboDhisDataElements)
+        self.comboDhisIndicators = QtWidgets.QComboBox(self.formGroup_7)
+        self.comboDhisIndicators.setObjectName("comboDhisIndicators")
+        self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.comboDhisIndicators)
         self.label_7 = QtWidgets.QLabel(self.formGroup_7)
         self.label_7.setObjectName("label_7")
         self.formLayout_8.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_7)
@@ -574,7 +574,7 @@ class Ui_AfpolGISDialogBase(object):
         self.tabWidget.addTab(self.tab_7, "")
 
         self.retranslateUi(AfpolGISDialogBase)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(5)
         QtCore.QMetaObject.connectSlotsByName(AfpolGISDialogBase)
 
     def retranslateUi(self, AfpolGISDialogBase):
@@ -664,7 +664,7 @@ class Ui_AfpolGISDialogBase(object):
         self.label_6.setText(_translate("AfpolGISDialogBase", "Select Admin Level:"))
         self.formSelectorLabel_8.setText(_translate("AfpolGISDialogBase", "Select Org Unit:"))
         self.geoFieldSelectorLabel_8.setText(_translate("AfpolGISDialogBase", "Select Dataset"))
-        self.label_5.setText(_translate("AfpolGISDialogBase", "Select Data Element"))
+        self.label_5.setText(_translate("AfpolGISDialogBase", "Select Indicator"))
         self.label_7.setText(_translate("AfpolGISDialogBase", "Period"))
         self.dhisCancelButton.setText(_translate("AfpolGISDialogBase", "Cancel"))
         self.dhisOkButton.setText(_translate("AfpolGISDialogBase", "OK"))
