@@ -2229,33 +2229,34 @@ class AfpolGIS(QObject):
                     }
                 }
             )
+        
+        if formID:
+            if hasattr(self, "vlayer"):
+                if self.vlayer.get("layer"):
+                    self.vlayer["syncData"] = True
 
-        if hasattr(self, "vlayer"):
-            if self.vlayer.get("layer"):
-                self.vlayer["syncData"] = True
+            self.ona_worker = OnaRequestThread(
+                url,
+                auth,
+                params,
+                headers=None,
+                total_records=self.data_count,
+                records_per_page=page_size,
+                formID=formID,
+            )
 
-        self.ona_worker = OnaRequestThread(
-            url,
-            auth,
-            params,
-            headers=None,
-            total_records=self.data_count,
-            records_per_page=page_size,
-            formID=formID,
-        )
-
-        # Connect signals to the handler methods
-        self.ona_worker.data_fetched.connect(self.handle_data_fetched)
-        self.ona_worker.progress_updated.connect(self.handle_ona_data_fetch_progress)
-        self.ona_worker.count_and_date_fields_fetched.connect(
-            self.handle_date_and_count_fields
-        )
-        self.ona_worker.no_data.connect(self.handle_no_json_data)
-        self.ona_worker.count_and_date_fields_error_occurred.connect(
-            self.handle_date_and_count_fields_error
-        )
-        self.ona_worker.error_occurred.connect(self.handle_fetch_error)
-        self.ona_worker.start()
+            # Connect signals to the handler methods
+            self.ona_worker.data_fetched.connect(self.handle_data_fetched)
+            self.ona_worker.progress_updated.connect(self.handle_ona_data_fetch_progress)
+            self.ona_worker.count_and_date_fields_fetched.connect(
+                self.handle_date_and_count_fields
+            )
+            self.ona_worker.no_data.connect(self.handle_no_json_data)
+            self.ona_worker.count_and_date_fields_error_occurred.connect(
+                self.handle_date_and_count_fields_error
+            )
+            self.ona_worker.error_occurred.connect(self.handle_fetch_error)
+            self.ona_worker.start()
 
     def fetch_button_clicked(self):
         """Handles the Fetch button click event."""
@@ -2880,6 +2881,23 @@ class AfpolGIS(QObject):
             chunk_size = 10000  # make this configurable
             # Define the layer with the same geometry type and fields as the GeoJSON data
             feature_type = features[0].get("geometry").get("type")
+
+            # Check for existing layer
+            existing_layer = None
+            for layer in QgsProject.instance().mapLayers().values():
+                if layer.name() == layer_name:
+                    existing_layer = True
+                    if self.vlayer \
+                        and self.vlayer.get("layer") \
+                            and not self.vlayer.get("syncData") \
+                            and existing_layer:
+                        self.iface.messageBar().pushMessage(
+                            "Notice",
+                            "Layer Exists",
+                            level=Qgis.Warning,
+                            duration=5
+                        )
+
             vlayer = QgsVectorLayer(
                 f"{feature_type}?crs=EPSG:4326", f"{layer_name}", "memory"
             )
@@ -2893,10 +2911,11 @@ class AfpolGIS(QObject):
                     self.vlayer
                     and self.vlayer.get("layer")
                     and self.vlayer.get("syncData")
+                    and existing_layer
                 ):
                     self.vlayer = {"syncData": True, "layer": vlayer}
-                    self.update_layer_data(f"{layer_name}", geojson_data, vlayer)
-                elif not self.vlayer.get("layer") or not self.vlayer.get("syncData"):
+                    self.update_layer_data(layer_name, geojson_data, vlayer)
+                elif (not self.vlayer.get("layer") or not self.vlayer.get("syncData")) and not existing_layer:
                     # Start editing to add fields and features
                     vlayer.startEditing()
                     prop_keys = [
@@ -2960,53 +2979,63 @@ class AfpolGIS(QObject):
 
     def update_layer_data(self, layer_name, geojson_data, vlayer):
         """Fetch new data and update the existing layer in QGIS."""
-        vlayer = self.iface.activeLayer()
+        layers = QgsProject.instance().mapLayersByName(layer_name)
 
-        vlayer.startEditing()
+        if layers:
+            vlayer = layers[0] 
 
-        # Collect all unique property keys from the new data
-        all_property_keys = set()
-        for feature_data in geojson_data["features"]:
-            all_property_keys.update(feature_data.get("properties", {}).keys())
+            vlayer.startEditing()
 
-        # Ensure layer fields include all property keys
-        layer_fields = [field.name() for field in vlayer.fields()]
-        for key in all_property_keys:
-            if key not in layer_fields:
-                # Add missing fields dynamically
-                vlayer.addAttribute(
-                    QgsField(key, QVariant.String)
-                )  # Adjust type if needed
-                layer_fields.append(key)
+            # Collect all unique property keys from the new data
+            all_property_keys = set()
+            for feature_data in geojson_data["features"]:
+                all_property_keys.update(feature_data.get("properties", {}).keys())
 
-        vlayer.updateFields()  # Refresh the field structure
+            # Ensure layer fields include all property keys
+            layer_fields = [field.name() for field in vlayer.fields()]
+            for key in all_property_keys:
+                if key not in layer_fields:
+                    # Add missing fields dynamically
+                    vlayer.addAttribute(
+                        QgsField(key, QVariant.String)
+                    )  # Adjust type if needed
+                    layer_fields.append(key)
 
-        # Delete existing features
-        vlayer.deleteFeatures([feature.id() for feature in vlayer.getFeatures()])
+            vlayer.updateFields()  # Refresh the field structure
 
-        # Load new features
-        for feature_data in geojson_data["features"]:
-            new_feature = QgsFeature(vlayer.fields())
+            # Delete existing features
+            vlayer.deleteFeatures([feature.id() for feature in vlayer.getFeatures()])
 
-            # Set geometry
-            geometry_wkt = self.geojson_to_wkt(feature_data["geometry"])
-            geometry = QgsGeometry.fromWkt(geometry_wkt)
-            if geometry:
-                new_feature.setGeometry(geometry)
+            # Load new features
+            for feature_data in geojson_data["features"]:
+                new_feature = QgsFeature(vlayer.fields())
 
-            # Align attributes with updated fields
-            properties = feature_data.get("properties", {})
-            attributes = [
-                properties.get(field_name, None) for field_name in layer_fields
-            ]
-            new_feature.setAttributes(attributes)
+                # Set geometry
+                geometry_wkt = self.geojson_to_wkt(feature_data["geometry"])
+                geometry = QgsGeometry.fromWkt(geometry_wkt)
+                if geometry:
+                    new_feature.setGeometry(geometry)
 
-            vlayer.addFeature(new_feature)
+                # Align attributes with updated fields
+                properties = feature_data.get("properties", {})
+                attributes = [
+                    properties.get(field_name, None) for field_name in layer_fields
+                ]
+                new_feature.setAttributes(attributes)
 
-        # Commit changes and refresh the layer
-        vlayer.commitChanges()
-        vlayer.triggerRepaint()
-        self.dlg.app_logs.appendPlainText(f"Layer {layer_name} Updated Successfully!")
+                vlayer.addFeature(new_feature)
+
+            # Commit changes and refresh the layer
+            vlayer.commitChanges()
+            vlayer.triggerRepaint()
+            self.dlg.app_logs.appendPlainText(f"Layer {layer_name} Updated Successfully!")
+        else:
+            self.iface.messageBar().pushMessage(
+                "Notice",
+                f"No Available Layers to be Updated",
+                level=Qgis.Warning,
+                duration=10
+            )
     
     # stop workers if they are running
     def stop_workers(self):
