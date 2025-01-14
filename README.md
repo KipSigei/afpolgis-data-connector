@@ -6,23 +6,22 @@
 
 ## Overview
 
-The **AfpolGIS Data Connector** allows users to fetch GeoJSON data from diverse Data API's and load it directly into QGIS as a layer. The plugin fetches and saves the data asynchronously and supports handling multiple pages of data from the API, as well as real time synchronization of data.
+The **AfpolGIS Data Connector** allows users to fetch GeoJSON data from diverse Data API's and load it directly into QGIS as a layer. The plugin fetches and loads the data asynchronously, supports filtering data by date ranges as well as real time synchronization of data.
 
 ## Features
 
 - Fetch GeoJSON data from Onadata, ODK, KoboToolbox, GTS, ES World and DHIS
 - Load the data directly into QGIS as a layer
-- Asynchronous data fetching with QThreadPool
-- Password field for API credentials with toggleable visibility
+- Asynchronous data fetching with QThread
+- Filtering Data by Date Ranges
 - Supports paginated API requests
 - Automatic zoom to layer after loading
-- Reset input fields and dialog after loading
 
 ## Requirements
 
 To run this plugin, you will need the following installed in your machine:
 
-- `python3.12`
+- `python 3.12`
 
 
 ### Option 1: Automatic Installation (QGIS 3.20+)
@@ -55,4 +54,5 @@ If the automatic installation doesn't work, you will need to manually install th
 ## Next Steps
 1. Add a way to save credentials (username/password) so that they can be pre-loaded to avoid having to re-enter when relaunching the application
 2. The sync functionality currently works per layer per platform. The plan is to add functionality to have the sync work for all OnaData, Kobo or ODK layers added to QGIS
-3. Create a similar plugin for ArcGIS Pro
+3. Add a search field to filter long list of form names on dropdown
+4. Create a similar plugin for ArcGIS Pro
