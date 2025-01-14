@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="/plugins/afpolgis-data-connector" >
+  <qresource prefix="/plugins/afpolgis_data_connector" >
      <file>icon.png</file>
   </qresource>
 </RCC>

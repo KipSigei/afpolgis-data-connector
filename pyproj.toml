@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "AfpolGIS"
-version = "2.0.0"
+version = "2.1.0"
 description = "AfpolGIS Data Connector"
 authors = ["Kipchirchir Cheroigin <kcheroigin@gmail.com>"]
 homepage = "https://www.itopen.it"
