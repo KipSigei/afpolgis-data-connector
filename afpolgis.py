@@ -3036,6 +3036,15 @@ class AfpolGIS(QObject):
             # Commit changes and refresh the layer
             vlayer.commitChanges()
             vlayer.triggerRepaint()
+
+            # Zoom to the updated layer
+            canvas = self.iface.mapCanvas()
+
+            # Set the extent of the canvas to the layer's extent
+            canvas.setExtent(vlayer.extent())
+
+            canvas.refresh()
+
             self.dlg.app_logs.appendPlainText(
                 f"Layer {layer_name} Updated Successfully!"
             )
