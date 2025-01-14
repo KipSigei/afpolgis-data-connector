@@ -187,6 +187,7 @@ class AfpolGIS(QObject):
 
         # Connect the ODK "OK" button to the fetch_kobo_form_data_clicked function
         self.dlg.koboOkButton.clicked.connect(self.fetch_kobo_form_data_clicked)
+        self.dlg.koboCancelButton.clicked.connect(self.kobo_cancel_button_clicked)
 
         self.dlg.btnFetchOnaForms.clicked.connect(self.fetch_ona_forms_handler)
 
@@ -511,6 +512,9 @@ class AfpolGIS(QObject):
     
     def odk_cancel_button_clicked(self):
         self.reset_odk_inputs()
+    
+    def kobo_cancel_button_clicked(self):
+        self.reset_kobo_inputs()
 
     def clear_logs(self):
         self.dlg.app_logs.clear()
@@ -1015,9 +1019,11 @@ class AfpolGIS(QObject):
     def fetch_kobo_form_data_clicked(self):
         api_url = self.dlg.kobo_api_url.text()
         selected_form = self.dlg.comboKoboForms.currentData()
+
         asset_id = None
         if selected_form:
             asset_id = selected_form.get("asset_uid")
+
         username = self.dlg.kobo_username.text()
         password = self.dlg.koboMLineEdit.text()
         geo_field = self.dlg.comboKoboGeoFields.currentText()
@@ -1055,14 +1061,17 @@ class AfpolGIS(QObject):
 
     def on_kobo_data_sync_enabled(self):
         api_url = self.dlg.kobo_api_url.text()
-        asset_id = self.dlg.comboKoboForms.currentData()
+        selected_form = self.dlg.comboKoboForms.currentData()
         username = self.dlg.kobo_username.text()
         password = self.dlg.koboMLineEdit.text()
         geo_field = self.dlg.comboKoboGeoFields.currentText()
 
+        asset_id = None
+        if selected_form:
+            asset_id = selected_form.get("asset_uid")
+
         # Fetch latest date fields
         self.fetch_kobo_date_range_fields(api_url, username, password, asset_id)
-        time.sleep(1)
 
         # Extract date fields from time widget
         kobo_from_date = self.dlg.KoboDateTimeFrom.date()
@@ -1081,19 +1090,20 @@ class AfpolGIS(QObject):
         ]  # Adjust to match original format
         kobo_to_timestamp = to_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-        if hasattr(self, "vlayer"):
-            if self.vlayer.get("layer"):
-                self.vlayer["syncData"] = True
+        if asset_id:
+            if hasattr(self, "vlayer"):
+                if self.vlayer.get("layer"):
+                    self.vlayer["syncData"] = True
 
-        self.fetch_and_save_kobo_data(
-            api_url,
-            username,
-            password,
-            asset_id,
-            geo_field,
-            kobo_from_timestamp,
-            kobo_to_timestamp,
-        )
+            self.fetch_and_save_kobo_data(
+                api_url,
+                username,
+                password,
+                asset_id,
+                geo_field,
+                kobo_from_timestamp,
+                kobo_to_timestamp,
+            )
 
     def fetch_and_save_kobo_data(
         self, api_url, username, password, asset_id, geo_field, from_date, to_date
@@ -1710,48 +1720,57 @@ class AfpolGIS(QObject):
 
     def on_odk_data_sync_enabled(self):
         api_url = self.dlg.odk_api_url.text()
-        form_id_str = self.dlg.comboODKForms.currentText()
         username = self.dlg.odk_username.text()
         password = self.dlg.odkmLineEdit.text()
         geo_field = self.dlg.comboODKGeoFields.currentText()
         odk_sync_interval = int(self.dlg.odkSyncInterval.value())
-        self.fetch_odk_date_range_fields(
-            api_url,
-            username,
-            password,
-            form_id_str,
-        )
-        time.sleep(3)
-        # extract date fields
-        odk_from_date = self.dlg.ODKDateTimeFrom.date()
-        odk_to_date = self.dlg.ODKDateTimeTo.date()
 
-        from_dt = datetime(
-            odk_from_date.year(), odk_from_date.month(), odk_from_date.day(), 0, 0, 0
-        )  # 12:00 AM
-        to_dt = datetime(
-            odk_to_date.year(), odk_to_date.month(), odk_to_date.day(), 23, 59, 59
-        )
+        form_data = self.dlg.comboODKForms.currentData()
+        form_id_str = None
+        project_id = None
 
-        # Convert datetime to timestamp string
-        odk_from_timestamp = (
-            from_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-        )  # Adjust to match original format
-        odk_to_timestamp = to_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        if form_data:
+            form_id_str = form_data.get("form_id")
+            project_id = form_data.get("project_id")
 
-        if hasattr(self, "vlayer"):
-            if self.vlayer.get("layer"):
-                self.vlayer["syncData"] = True
+            self.fetch_odk_date_range_fields(
+                api_url,
+                username,
+                password,
+                project_id,
+                form_id_str,
+            )
 
-        self.fetch_and_save_odk_data(
-            api_url,
-            username,
-            password,
-            form_id_str,
-            geo_field,
-            odk_from_timestamp,
-            odk_to_timestamp,
-        )
+            # extract date fields
+            odk_from_date = self.dlg.ODKDateTimeFrom.date()
+            odk_to_date = self.dlg.ODKDateTimeTo.date()
+
+            from_dt = datetime(
+                odk_from_date.year(), odk_from_date.month(), odk_from_date.day(), 0, 0, 0
+            )  # 12:00 AM
+            to_dt = datetime(
+                odk_to_date.year(), odk_to_date.month(), odk_to_date.day(), 23, 59, 59
+            )
+
+            # Convert datetime to timestamp string
+            odk_from_timestamp = (
+                from_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+            )  # Adjust to match original format
+            odk_to_timestamp = to_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+            if hasattr(self, "vlayer"):
+                if self.vlayer.get("layer"):
+                    self.vlayer["syncData"] = True
+
+            self.fetch_and_save_odk_data(
+                api_url,
+                username,
+                password,
+                form_id_str,
+                geo_field,
+                odk_from_timestamp,
+                odk_to_timestamp,
+            )
 
     def fetch_odk_form_data_clicked(self):
         # Extract parameters from the dialog
@@ -3002,3 +3021,14 @@ class AfpolGIS(QObject):
         self.dlg.odkOkButton.setEnabled(True)
         self.dlg.btnFetchODKForms.setEnabled(True)
         self.dlg.comboODKForms.setEnabled(True)
+    
+    def reset_kobo_inputs(self):
+        if self.kobo_sync_timer.isActive():
+            self.kobo_sync_timer.stop()
+
+        self.dlg.app_logs.clear()
+        self.dlg.koboPorgressBar.setValue(0)
+
+        self.dlg.koboOkButton.setEnabled(True)
+        self.dlg.btnFetchKoboForms.setEnabled(True)
+        self.dlg.comboKoboForms.setEnabled(True)
