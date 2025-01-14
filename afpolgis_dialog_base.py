@@ -141,10 +141,10 @@ class Ui_AfpolGISDialogBase(object):
         self.label.setObjectName("label")
         self.syncLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label)
         self.onaPageSize = QgsSpinBox(self.syncGroup)
-        self.onaPageSize.setMinimum(100)
-        self.onaPageSize.setMaximum(10000)
-        self.onaPageSize.setSingleStep(100)
-        self.onaPageSize.setProperty("value", 1000)
+        self.onaPageSize.setMinimum(1000)
+        self.onaPageSize.setMaximum(50000)
+        self.onaPageSize.setSingleStep(1000)
+        self.onaPageSize.setProperty("value", 10000)
         self.onaPageSize.setShowClearButton(False)
         self.onaPageSize.setClearValue(True)
         self.onaPageSize.setObjectName("onaPageSize")
@@ -574,7 +574,7 @@ class Ui_AfpolGISDialogBase(object):
         self.tabWidget.addTab(self.tab_7, "")
 
         self.retranslateUi(AfpolGISDialogBase)
-        self.tabWidget.setCurrentIndex(5)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(AfpolGISDialogBase)
 
     def retranslateUi(self, AfpolGISDialogBase):
