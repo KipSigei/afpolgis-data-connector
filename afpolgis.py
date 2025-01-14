@@ -89,6 +89,7 @@ class AfpolGIS(QObject):
         self.geo_fields_dict = dict()
         self.geo_types = ["geopoint", "geoshape", "geotrace"]
         self.vlayer = dict()
+        self.vlayers = dict()
         self.odk_forms_to_projects_map = dict()
 
         # Initializing the dialog and other components
@@ -1087,7 +1088,10 @@ class AfpolGIS(QObject):
         geo_field = self.dlg.comboKoboGeoFields.currentText()
 
         asset_id = None
+        asset_name = None
+
         if selected_form:
+            asset_name = selected_form.get("asset_name")
             asset_id = selected_form.get("asset_uid")
 
         # Fetch latest date fields
@@ -1110,10 +1114,12 @@ class AfpolGIS(QObject):
         ]  # Adjust to match original format
         kobo_to_timestamp = to_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-        if asset_id:
-            if hasattr(self, "vlayer"):
-                if self.vlayer.get("layer"):
-                    self.vlayer["syncData"] = True
+        if asset_id and asset_name:
+            cleaned_asset_name = "".join(asset_name.split(" "))
+
+            if hasattr(self, "vlayers"):
+                if self.vlayers.get(f"{cleaned_asset_name}_{geo_field}"):
+                    self.vlayers[f"{cleaned_asset_name}_{geo_field}"]["syncData"] = True
 
             self.fetch_and_save_kobo_data(
                 api_url,
@@ -1791,9 +1797,9 @@ class AfpolGIS(QObject):
             )  # Adjust to match original format
             odk_to_timestamp = to_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
-            if hasattr(self, "vlayer"):
-                if self.vlayer.get("layer"):
-                    self.vlayer["syncData"] = True
+            if hasattr(self, "vlayers"):
+                if self.vlayers.get(f"{form_id_str}_{geo_field}"):
+                    self.vlayers[f"{form_id_str}_{geo_field}"]["syncData"] = True
 
             self.fetch_and_save_odk_data(
                 api_url,
@@ -2214,6 +2220,9 @@ class AfpolGIS(QObject):
         password = self.dlg.onaMLineEdit.text()
         page_size = int(self.dlg.onaPageSize.value())
 
+        geo_text = self.dlg.comboOnaGeoFields.currentText()
+        geo_field = geo_text.split("-")[0].strip()
+
         # data count url
         auth = HTTPBasicAuth(username, password)
         url = f"https://{api_url}/api/v1/data/{formID}.json"
@@ -2243,9 +2252,9 @@ class AfpolGIS(QObject):
             )
 
         if formID:
-            if hasattr(self, "vlayer"):
-                if self.vlayer.get("layer"):
-                    self.vlayer["syncData"] = True
+            if hasattr(self, "vlayers"):
+                if self.vlayers.get(f"{formID}_{geo_field}"):
+                    self.vlayers[f"{formID}_{geo_field}"]["syncData"] = True
 
             self.ona_worker = OnaRequestThread(
                 url,
@@ -2285,7 +2294,8 @@ class AfpolGIS(QObject):
         formID = self.dlg.comboOnaForms.currentData()
         username = self.dlg.onadata_username.text()
         password = self.dlg.onaMLineEdit.text()
-        geo_field = self.curr_geo_field
+        geo_text = self.dlg.comboOnaGeoFields.currentText()
+        geo_field = geo_text.split("-")[0].strip()
         ona_sync_interval = int(self.dlg.onaSyncInterval.value())
         page_size = int(self.dlg.onaPageSize.value())
         directory = True
@@ -2895,9 +2905,9 @@ class AfpolGIS(QObject):
                 if layer.name() == layer_name:
                     existing_layer = True
                     if (
-                        self.vlayer
-                        and self.vlayer.get("layer")
-                        and not self.vlayer.get("syncData")
+                        self.vlayers
+                        and self.vlayers.get(layer_name)
+                        and not self.vlayers.get(layer_name).get("syncData")
                         and existing_layer
                     ):
                         self.iface.messageBar().pushMessage(
@@ -2914,15 +2924,19 @@ class AfpolGIS(QObject):
                 return
             else:
                 if (
-                    self.vlayer
-                    and self.vlayer.get("layer")
-                    and self.vlayer.get("syncData")
+                    self.vlayers
+                    and self.vlayers.get(layer_name)
+                    and self.vlayers.get(layer_name).get("syncData")
                     and existing_layer
                 ):
-                    self.vlayer = {"syncData": True, "layer": vlayer}
+                    if self.vlayers.get(layer_name):
+                        self.vlayers[layer_name] = {
+                            "syncData": True,
+                            "vlayer": vlayer
+                        }
                     self.update_layer_data(layer_name, geojson_data, vlayer)
                 elif (
-                    not self.vlayer.get("layer") or not self.vlayer.get("syncData")
+                    not self.vlayers.get(layer_name) or not self.vlayers.get(layer_name).get("syncData")
                 ) and not existing_layer:
                     # Start editing to add fields and features
                     vlayer.startEditing()
@@ -2963,7 +2977,12 @@ class AfpolGIS(QObject):
                     self.dlg.app_logs.appendPlainText(
                         f"Layer {layer_name} Added Successfully!"
                     )
-                    self.vlayer = {"syncData": False, "layer": vlayer}
+
+                    if not self.vlayers.get(layer_name):
+                        self.vlayers[layer_name] = {
+                            "syncData": False,
+                            "vlayer": vlayer
+                        }
 
         # Close and reset the dialog after layer is successfully added
         # if int(self.dlg.mQgsDoubleSpinBox.value()):
