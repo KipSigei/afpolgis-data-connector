@@ -2053,7 +2053,10 @@ class AfpolGIS(QObject):
                     hasData = False
                     self.dlg.gtsProgressBar.setValue(100)
                     self.iface.messageBar().pushMessage(
-                        "Notice", f"No Data Available", level=Qgis.Warning
+                        "Notice",
+                        f"No Data Available",
+                        level=Qgis.Warning,
+                        duration=10,
                     )
                     self.dlg.odkOkButton.setEnabled(True)
             else:
@@ -2063,23 +2066,23 @@ class AfpolGIS(QObject):
                     "Error",
                     f"Error fetching data: {response.status_code}",
                     level=Qgis.Critical,
-                )
-                self.dlg.odkOkButton.setEnabled(True)
-
-            if (
-                feature_collection["features"]
-                and len(feature_collection["features"]) > 0
-            ):
-                self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
-                self.dlg.odkOkButton.setEnabled(True)
-            else:
-                self.iface.messageBar().pushMessage(
-                    "Notice",
-                    f"The selected geo field doesn't have geo data",
-                    level=Qgis.Warning,
                     duration=10,
                 )
                 self.dlg.odkOkButton.setEnabled(True)
+
+            params["$skip"] += params["$top"]
+
+        if feature_collection["features"] and len(feature_collection["features"]) > 0:
+            self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
+            self.dlg.odkOkButton.setEnabled(True)
+        else:
+            self.iface.messageBar().pushMessage(
+                "Notice",
+                f"The selected geo field doesn't have geo data",
+                level=Qgis.Warning,
+                duration=10,
+            )
+            self.dlg.odkOkButton.setEnabled(True)
 
     # Slots to handle signals
     def on_data_fetched(self, data):
