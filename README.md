@@ -6,11 +6,11 @@
 
 ## Overview
 
-The **AfpolGIS Data Connector** allows users to fetch GeoJSON data from diverse Data API's and load it directly into QGIS as a layer. The plugin fetches and loads the data asynchronously, supports filtering data by date ranges as well as real time synchronization of data.
+The **AfpolGIS Data Connector** allows users to fetch Geospatial data from diverse Data API's and load it directly into QGIS as a layer. The plugin fetches and loads the data asynchronously, supports filtering data by date ranges as well as real time synchronization of data.
 
 ## Features
 
-- Fetch GeoJSON data from Onadata, ODK, KoboToolbox, GTS, ES World and DHIS
+- Fetch Geospatial data from Onadata, ODK, KoboToolbox, GTS, ES World and DHIS
 - Load the data directly into QGIS as a layer
 - Asynchronous data fetching with QThread
 - Filtering Data by Date Ranges

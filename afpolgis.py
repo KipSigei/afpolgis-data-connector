@@ -243,9 +243,7 @@ class AfpolGIS(QObject):
         )
 
         # Connect ES topography dropdown on change
-        self.dlg.esOkButton.clicked.connect(
-            self.fetch_es_data_clicked
-        )
+        self.dlg.esOkButton.clicked.connect(self.fetch_es_data_clicked)
 
         # Connect GTS table names dropdown on change
         self.dlg.comboGTSTableTypes.currentIndexChanged.connect(
@@ -341,7 +339,9 @@ class AfpolGIS(QObject):
             "note",
         ]
 
-        self.dlg.about_text.setText('<h4>Overview</h4><p>This software has been developed by the WHO AFRO GIS Team. It is designed to extract, transform and load data from OnaData, ODK, KoboToolbox, ES World, GTS and DHIS then adds as a layer on QGIS. It also has the capability of filtering data by date ranges as well as synchronizing real time data from ODK, OnaData and KoboToolbox. Note that it could take a while to load large datasets depending on the performance of the API Servers</p>')
+        self.dlg.about_text.setText(
+            "<h4>Overview</h4><p>This software has been developed by the WHO AFRO GIS Team. It is designed to extract, transform and load data from OnaData, ODK, KoboToolbox, ES World, GTS and DHIS then adds as a layer on QGIS. It also has the capability of filtering data by date ranges as well as synchronizing real time data from ODK, OnaData and KoboToolbox. Note that it could take a while to load large datasets depending on the performance of the API Servers</p>"
+        )
 
         # Initialize QThreadPool for managing worker threads
         self.thread_pool = QThreadPool.globalInstance()
@@ -780,6 +780,7 @@ class AfpolGIS(QObject):
 
             while hasData:
                 self.dlg.gtsOkButton.setEnabled(False)
+                self.dlg.gtsProgressBar.setValue(20)
                 response = self.fetch_with_retries(url, auth, params)
                 if response.status_code == 200:
                     self.dlg.gtsProgressBar.setValue(50)
@@ -844,6 +845,7 @@ class AfpolGIS(QObject):
                 self.load_data_to_qgis(
                     feature_collection, "gts", "_".join(single_round_name.split(" "))
                 )
+                self.dlg.gtsProgressBar.setValue(0)
 
     def handle_gts_cancel_btn(self):
         self.dlg.gtsProgressBar.setValue(0)
@@ -1204,6 +1206,7 @@ class AfpolGIS(QObject):
             cleaned_asset_name = "".join(asset_name.split(" "))
 
             self.load_data_to_qgis(feature_collection, cleaned_asset_name, geo_field)
+            self.dlg.koboPorgressBar.setValue(0)
 
     def fetch_kobo_date_range_fields(self, api_url, username, password, asset_id):
         auth = HTTPBasicAuth(username, password)
@@ -2081,6 +2084,7 @@ class AfpolGIS(QObject):
         if feature_collection["features"] and len(feature_collection["features"]) > 0:
             self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
             self.dlg.odkOkButton.setEnabled(True)
+            self.dlg.odkProgressBar.setValue(0)
         else:
             self.iface.messageBar().pushMessage(
                 "Notice",
@@ -3155,3 +3159,6 @@ class AfpolGIS(QObject):
         self.dlg.koboOkButton.setEnabled(True)
         self.dlg.btnFetchKoboForms.setEnabled(True)
         self.dlg.comboKoboForms.setEnabled(True)
+
+    def reset_gts_inputs(self):
+        self.fetch_gts_tracking_rounds_data_handler()
