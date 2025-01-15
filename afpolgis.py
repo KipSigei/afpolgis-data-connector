@@ -243,8 +243,8 @@ class AfpolGIS(QObject):
         )
 
         # Connect ES topography dropdown on change
-        self.dlg.combESTopology.currentIndexChanged.connect(
-            self.on_es_topography_change
+        self.dlg.esOkButton.clicked.connect(
+            self.fetch_es_data_clicked
         )
 
         # Connect GTS table names dropdown on change
@@ -340,6 +340,8 @@ class AfpolGIS(QObject):
             "start-geopoint",
             "note",
         ]
+
+        self.dlg.about_text.setText('<h4>Overview</h4><p>This software has been developed by the WHO AFRO GIS Team. It is designed to extract, transform and load data from OnaData, ODK, KoboToolbox, ES World, GTS and DHIS then adds as a layer on QGIS. It also has the capability of filtering data by date ranges as well as synchronizing real time data from ODK, OnaData and KoboToolbox. Note that it could take a while to load large datasets depending on the performance of the API Servers</p>')
 
         # Initialize QThreadPool for managing worker threads
         self.thread_pool = QThreadPool.globalInstance()
@@ -451,7 +453,6 @@ class AfpolGIS(QObject):
     def run(self):
         """Run method that performs all the real work."""
         # Show the dialog
-        self.dlg.app_logs.appendPlainText(f"Run has been executed")
         self.dlg.show()
         # self.add_basemap()
 
@@ -1377,7 +1378,7 @@ class AfpolGIS(QObject):
 
         return dict(items)
 
-    def on_es_topography_change(self):
+    def fetch_es_data_clicked(self):
         api_url = self.dlg.es_api_url.text()
         es_api_version = self.dlg.esAPIVersion.text()
         topography = self.dlg.combESTopology.currentText()
@@ -1385,6 +1386,7 @@ class AfpolGIS(QObject):
 
         url = f"https://{api_url}/api/{es_api_version}-prod/{topography_param}"
 
+        self.dlg.esProgressBar.setValue(20)
         response = self.fetch_with_retries(url)
 
         feature_collection = {
@@ -1394,6 +1396,7 @@ class AfpolGIS(QObject):
 
         if response.status_code == 200:
             data = response.json()
+            self.dlg.esProgressBar.setValue(100)
             if data:
                 for datum in data:
                     geometry = datum.get("geometry")
@@ -1416,11 +1419,14 @@ class AfpolGIS(QObject):
                     and len(feature_collection["features"]) > 0
                 ):
                     self.load_data_to_qgis(feature_collection, "es", topography_param)
+                    self.dlg.esProgressBar.setValue(0)
             else:
+                self.dlg.esProgressBar.setValue(0)
                 self.iface.messageBar().pushMessage(
                     "Notice", "No Data Found", level=Qgis.Warning
                 )
         else:
+            self.dlg.esProgressBar.setValue(0)
             self.iface.messageBar().pushMessage(
                 "Error",
                 f"Error fetching data: {response.status_code}",
@@ -2108,6 +2114,9 @@ class AfpolGIS(QObject):
 
     def handle_data_fetched(self, data):
         formID = self.dlg.comboOnaForms.currentData()
+        form_str = self.dlg.comboOnaForms.currentText()
+        cleaned_form_str = "_".join(form_str.split(" "))
+
         geo_field = self.curr_geo_field
 
         self.dlg.app_logs.appendPlainText("Data Fetch Complete, Building GeoJSON... \n")
@@ -2137,7 +2146,9 @@ class AfpolGIS(QObject):
                 self.dlg.app_logs.appendPlainText(
                     "Building GeoJSON Complete. Adding Layer to Map...\n"
                 )
-                self.load_data_to_qgis(feature_collection, formID, geo_field)
+                self.load_data_to_qgis(feature_collection, cleaned_form_str, geo_field)
+
+                self.dlg.onaProgressBar.setValue(0)
                 if not self.ona_sync_timer.isActive():
                     self.dlg.onaOkButton.setEnabled(True)
             else:
