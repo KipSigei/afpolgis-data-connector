@@ -1136,6 +1136,7 @@ class AfpolGIS(QObject):
     ):
         auth = HTTPBasicAuth(username, password)
         selected_form = self.dlg.comboKoboForms.currentData()
+        page_size = int(self.dlg.koboPageSize.value())
         asset_name = selected_form.get("asset_name")
         self.dlg.koboOkButton.setEnabled(False)
 
@@ -1146,7 +1147,7 @@ class AfpolGIS(QObject):
 
         params = {
             "sort": sort_param,
-            "limit": 1000,
+            "limit": page_size,
             "start": 0,
         }
 
@@ -2017,7 +2018,9 @@ class AfpolGIS(QObject):
     ):
         auth = HTTPBasicAuth(username, password)
         self.dlg.odkOkButton.setEnabled(False)
-        params = {"$expand": "*", "$wkt": True}
+        page_size = int(self.dlg.odkPageSize.value())
+
+        params = {"$expand": "*", "$wkt": True, "$top": page_size, "$skip": 0}
 
         if odk_from_date and odk_to_date:
             filter_query = f"__system/submissionDate ge {odk_from_date} and __system/submissionDate le {odk_to_date}"
@@ -2029,43 +2032,54 @@ class AfpolGIS(QObject):
             "type": "FeatureCollection",
             "features": [],
         }
-        url = f"https://{api_url}/v1/projects/{project_id}/forms/{form_id_str}.svc/Submissions"
-        response = self.fetch_with_retries(url, auth, params=params)
-        if response.status_code == 200:
-            data = response.json()
-            data_list = data.get("value")
-            if data_list:
-                self.dlg.odkProgressBar.setValue(100)
-                for datum in data_list:
-                    flat_data = self.flatten_odk_json(datum)
-                    feature = self.get_odk_geo_data(flat_data, geo_field)
-                    if feature:
-                        feature_collection["features"].append(feature)
-                if (
-                    feature_collection["features"]
-                    and len(feature_collection["features"]) > 0
-                ):
-                    self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
 
-                    self.dlg.odkOkButton.setEnabled(True)
+        url = f"https://{api_url}/v1/projects/{project_id}/forms/{form_id_str}.svc/Submissions"
+        hasData = True
+
+        while hasData:
+            response = self.fetch_with_retries(url, auth, params)
+            if response.status_code == 200:
+                self.dlg.gtsProgressBar.setValue(50)
+                data = response.json()
+                data_list = data.get("value")
+                if data_list:
+                    self.dlg.odkProgressBar.setValue(100)
+                    for datum in data_list:
+                        flat_data = self.flatten_odk_json(datum)
+                        feature = self.get_odk_geo_data(flat_data, geo_field)
+                        if feature:
+                            feature_collection["features"].append(feature)
                 else:
+                    hasData = False
+                    self.dlg.gtsProgressBar.setValue(100)
                     self.iface.messageBar().pushMessage(
-                        "Notice",
-                        f"The selected geo field doesn't have geo data",
-                        level=Qgis.Warning,
-                        duration=10,
+                        "Notice", f"No Data Available", level=Qgis.Warning
                     )
                     self.dlg.odkOkButton.setEnabled(True)
             else:
+                hasData = False
+                self.dlg.gtsProgressBar.setValue(0)
                 self.iface.messageBar().pushMessage(
-                    "Notice", f"No Data Available", level=Qgis.Warning
+                    "Error",
+                    f"Error fetching data: {response.status_code}",
+                    level=Qgis.Critical,
                 )
-        else:
-            self.iface.messageBar().pushMessage(
-                "Error",
-                f"Error fetching data: {response.status_code}",
-                level=Qgis.Critical,
-            )
+                self.dlg.odkOkButton.setEnabled(True)
+
+            if (
+                feature_collection["features"]
+                and len(feature_collection["features"]) > 0
+            ):
+                self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
+                self.dlg.odkOkButton.setEnabled(True)
+            else:
+                self.iface.messageBar().pushMessage(
+                    "Notice",
+                    f"The selected geo field doesn't have geo data",
+                    level=Qgis.Warning,
+                    duration=10,
+                )
+                self.dlg.odkOkButton.setEnabled(True)
 
     # Slots to handle signals
     def on_data_fetched(self, data):
@@ -2930,13 +2944,11 @@ class AfpolGIS(QObject):
                     and existing_layer
                 ):
                     if self.vlayers.get(layer_name):
-                        self.vlayers[layer_name] = {
-                            "syncData": True,
-                            "vlayer": vlayer
-                        }
+                        self.vlayers[layer_name] = {"syncData": True, "vlayer": vlayer}
                     self.update_layer_data(layer_name, geojson_data, vlayer)
                 elif (
-                    not self.vlayers.get(layer_name) or not self.vlayers.get(layer_name).get("syncData")
+                    not self.vlayers.get(layer_name)
+                    or not self.vlayers.get(layer_name).get("syncData")
                 ) and not existing_layer:
                     # Start editing to add fields and features
                     vlayer.startEditing()
@@ -2979,10 +2991,7 @@ class AfpolGIS(QObject):
                     )
 
                     if not self.vlayers.get(layer_name):
-                        self.vlayers[layer_name] = {
-                            "syncData": False,
-                            "vlayer": vlayer
-                        }
+                        self.vlayers[layer_name] = {"syncData": False, "vlayer": vlayer}
 
         # Close and reset the dialog after layer is successfully added
         # if int(self.dlg.mQgsDoubleSpinBox.value()):
