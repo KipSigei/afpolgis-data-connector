@@ -7,7 +7,7 @@ author=Kipchirchir Cheroigin
 qgisMinimumVersion=3.0
 description=This plugin allows you to load geospatial data from several Data Platforms; OnaData, ODK, KoboToolbox, ES World, GTS and DHIS.
 about=This software has been developed by the WHO AFRO GIS Team. It is designed to extract, transform and load data from OnaData, ODK, KoboToolbox, ES World, GTS and DHIS then adds as a layer on QGIS. It also has the capability of filtering data by date ranges as well as synchronizing real time data from ODK, OnaData and KoboToolbox
-version=2.1
+version=2.2.0
 tracker=https://github.com/KipSigei/afpolgis-data-connector/issues
 repository=https://github.com/KipSigei/afpolgis-data-connector
 ; end of mandatory metadata
@@ -15,13 +15,15 @@ repository=https://github.com/KipSigei/afpolgis-data-connector
 ; start of optional metadata
 category=Plugins
 changelog=
+    2.2.0 - Fixes for Kobo and ODK Pagination logic
+    2.1.0 - Improve sync logic
+    2.0.0 - Integration with ODK, Kobo, ES World, GTS and DHIS
+    1.1.0 - Integration with OnaData
     1.0.3 - Make logs more verbose
     1.0.2 - Added Documentation
     1.0.1 - Fix dependencies
     1.0.0 - Fist testing release
-    1.1.0 - Integration with OnaData
-    2.0.0 - Integration with ODK, Kobo, ES World, GTS and DHIS
-    2.1.0 - Improve sync logic
+
 
 ; Tags are in comma separated value format, spaces are allowed within the
 ; tag name.
