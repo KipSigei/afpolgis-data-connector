@@ -206,8 +206,13 @@ class FetchOnaFormsThread(QThread):
 
         if user_res.status_code == 200:
             user_dets = user_res.json()
-            api_token = user_dets.get("api_token")
-        
+            if user_dets:
+                api_token = user_dets.get("api_token")
+            else:
+                self.no_data.emit("Failed to fetch User Details")
+        else:
+            self.status_error.emit(str(user_res.status_code))
+    
         if api_token:
             headers = {
                 "Authorization": f"Token {api_token}"
