@@ -243,9 +243,7 @@ class AfpolGIS(QObject):
         )
 
         # Connect ES topography dropdown on change
-        self.dlg.combESTopology.currentIndexChanged.connect(
-            self.on_es_topography_change
-        )
+        self.dlg.esOkButton.clicked.connect(self.fetch_es_data_clicked)
 
         # Connect GTS table names dropdown on change
         self.dlg.comboGTSTableTypes.currentIndexChanged.connect(
@@ -340,6 +338,77 @@ class AfpolGIS(QObject):
             "start-geopoint",
             "note",
         ]
+
+        html_content = """
+        <h2>AfPoLGIS Data Connector</h2>
+        <p>
+            This software has been developed by the WHO AFRO GIS Team. It is designed to extract, transform and load data from OnaData, ODK, KoboToolbox, ES World, GTS and DHIS then adds as a layer on QGIS. It also has the capability of filtering data by date ranges as well as synchronizing real time data from ODK, OnaData and KoboToolbox. Note that it could take a while to load large datasets depending on the performance of the API Servers.
+        </p>
+        <h3>Purpose and Features</h3>
+        <ul>
+            <li>Access and integrate spatial data from multiple external platforms.</li>
+            <li>Simplify spatial data workflows for African administrative and policy geography.</li>
+            <li>Tools for selecting and visualizing administrative boundaries, catchments, and other geospatial datasets.</li>
+        </ul>
+        <h3>Author Information</h3>
+        <p>
+            <strong>Developer:</strong> Kipchirchir Cheroigin<br>
+            <strong>Contact:</strong> <a href="mailto:kcheroigin@gmail.com">kcheroigin@gmail.com</a>
+        </p>
+        <h3>License</h3>
+        <p>
+            This plugin is released under the GNU v3.0 License.<br>
+            For details, refer to the <a href="https://github.com/KipSigei/afpolgis-data-connector/blob/main/LICENSE" target="_blank">LICENSE</a> file in the repository.
+        </p>
+        <h3>Version Information</h3>
+        <p><strong>Version:</strong> 2.2.0<br><strong>Release Date:</strong> 15/01/2025</p>
+        <h3>Supported Data Sources</h3>
+        <ul>
+            <li>ODK</li>
+            <li>OnaData</li>
+            <li>Kobo</li>
+            <li>ES World</li>
+            <li>GTS</li>
+            <li>DHIS</li>
+        </ul>
+        <h3>How to Use</h3>
+        <p>
+            Follow these steps to connect to external data sources and manage data sync:
+        </p>
+        <ol>
+            <li>
+                <strong>Authentication:</strong>  
+                Input the API Base Domain of choice, your username, and password in the <em>Authentication</em> section. Click <strong>Connect</strong> to establish a connection with the selected data source.
+            </li>
+            <li>
+                <strong>Dataset/Form Selection:</strong>  
+                Depending on the data source, Use the <em>Select Form</em> or <em>Select Category</em> dropdown to choose a specific form or dataset.
+            </li>
+            <li>
+                <strong>Sync Options:</strong>  
+                To Configure synchronization preferences for ODK, OnaData or Kobo, including:
+                <ul>
+                    <li><strong>Date Range From:</strong> Specify the start date for data synchronization.</li>
+                    <li><strong>Date Range To:</strong> Specify the end date for data synchronization.</li>
+                    <li><strong>Sync Interval:</strong> Set the time interval for periodic data syncs.</li>
+                    <li><strong>Page Size:</strong> Adjust the number of records fetched per API call.</li>
+                </ul>
+            </li>
+            <li>
+                Click <strong>OK</strong> to start the sync process or <strong>Cancel</strong> to abort.
+            </li>
+        </ol>
+        <p>
+            Monitor the sync progress through the progress bar at the bottom of the interface or by accessing the Logs tab.
+        </p>
+        <h3>Repository and Documentation</h3>
+        <p>
+            <a href="https://github.com/KipSigei/afpolgis-data-connector" target="_blank">GitHub Repository</a><br>
+            For issues or feature requests, open an issue in the repository.
+        </p>
+        """
+
+        self.dlg.about_text.setText(html_content)
 
         # Initialize QThreadPool for managing worker threads
         self.thread_pool = QThreadPool.globalInstance()
@@ -451,7 +520,6 @@ class AfpolGIS(QObject):
     def run(self):
         """Run method that performs all the real work."""
         # Show the dialog
-        self.dlg.app_logs.appendPlainText(f"Run has been executed")
         self.dlg.show()
         # self.add_basemap()
 
@@ -779,6 +847,7 @@ class AfpolGIS(QObject):
 
             while hasData:
                 self.dlg.gtsOkButton.setEnabled(False)
+                self.dlg.gtsProgressBar.setValue(20)
                 response = self.fetch_with_retries(url, auth, params)
                 if response.status_code == 200:
                     self.dlg.gtsProgressBar.setValue(50)
@@ -843,6 +912,7 @@ class AfpolGIS(QObject):
                 self.load_data_to_qgis(
                     feature_collection, "gts", "_".join(single_round_name.split(" "))
                 )
+                self.dlg.gtsProgressBar.setValue(0)
 
     def handle_gts_cancel_btn(self):
         self.dlg.gtsProgressBar.setValue(0)
@@ -1136,6 +1206,7 @@ class AfpolGIS(QObject):
     ):
         auth = HTTPBasicAuth(username, password)
         selected_form = self.dlg.comboKoboForms.currentData()
+        page_size = int(self.dlg.koboPageSize.value())
         asset_name = selected_form.get("asset_name")
         self.dlg.koboOkButton.setEnabled(False)
 
@@ -1146,7 +1217,7 @@ class AfpolGIS(QObject):
 
         params = {
             "sort": sort_param,
-            "limit": 1000,
+            "limit": page_size,
             "start": 0,
         }
 
@@ -1202,6 +1273,7 @@ class AfpolGIS(QObject):
             cleaned_asset_name = "".join(asset_name.split(" "))
 
             self.load_data_to_qgis(feature_collection, cleaned_asset_name, geo_field)
+            self.dlg.koboPorgressBar.setValue(0)
 
     def fetch_kobo_date_range_fields(self, api_url, username, password, asset_id):
         auth = HTTPBasicAuth(username, password)
@@ -1376,7 +1448,7 @@ class AfpolGIS(QObject):
 
         return dict(items)
 
-    def on_es_topography_change(self):
+    def fetch_es_data_clicked(self):
         api_url = self.dlg.es_api_url.text()
         es_api_version = self.dlg.esAPIVersion.text()
         topography = self.dlg.combESTopology.currentText()
@@ -1384,6 +1456,7 @@ class AfpolGIS(QObject):
 
         url = f"https://{api_url}/api/{es_api_version}-prod/{topography_param}"
 
+        self.dlg.esProgressBar.setValue(20)
         response = self.fetch_with_retries(url)
 
         feature_collection = {
@@ -1393,6 +1466,7 @@ class AfpolGIS(QObject):
 
         if response.status_code == 200:
             data = response.json()
+            self.dlg.esProgressBar.setValue(100)
             if data:
                 for datum in data:
                     geometry = datum.get("geometry")
@@ -1415,11 +1489,14 @@ class AfpolGIS(QObject):
                     and len(feature_collection["features"]) > 0
                 ):
                     self.load_data_to_qgis(feature_collection, "es", topography_param)
+                    self.dlg.esProgressBar.setValue(0)
             else:
+                self.dlg.esProgressBar.setValue(0)
                 self.iface.messageBar().pushMessage(
                     "Notice", "No Data Found", level=Qgis.Warning
                 )
         else:
+            self.dlg.esProgressBar.setValue(0)
             self.iface.messageBar().pushMessage(
                 "Error",
                 f"Error fetching data: {response.status_code}",
@@ -1633,6 +1710,14 @@ class AfpolGIS(QObject):
             )
             self.dlg.onaProgressBar.setValue(math.ceil(progress))
 
+    def handle_geo_fields_no_data(self, msg):
+        if isinstance(msg, str):
+            self.dlg.app_logs.appendPlainText(msg)
+            self.iface.messageBar().pushMessage(
+                "Notice", msg, level=Qgis.Warning, duration=10
+            )
+            self.reset_inputs()
+
     def fetch_ona_form_geo_fields(self):
         # clear geo fields combo box
 
@@ -1668,6 +1753,9 @@ class AfpolGIS(QObject):
             )
             self.fetch_ona_geo_fields_worker.progress_updated.connect(
                 self.handle_geo_fields_progress
+            )
+            self.fetch_ona_geo_fields_worker.no_data.connect(
+                self.handle_geo_fields_no_data
             )
             self.fetch_ona_geo_fields_worker.count_and_date_fields_fetched.connect(
                 self.handle_date_and_count_fields
@@ -2017,7 +2105,9 @@ class AfpolGIS(QObject):
     ):
         auth = HTTPBasicAuth(username, password)
         self.dlg.odkOkButton.setEnabled(False)
-        params = {"$expand": "*", "$wkt": True}
+        page_size = int(self.dlg.odkPageSize.value())
+
+        params = {"$expand": "*", "$wkt": True, "$top": page_size, "$skip": 0}
 
         if odk_from_date and odk_to_date:
             filter_query = f"__system/submissionDate ge {odk_from_date} and __system/submissionDate le {odk_to_date}"
@@ -2029,43 +2119,58 @@ class AfpolGIS(QObject):
             "type": "FeatureCollection",
             "features": [],
         }
-        url = f"https://{api_url}/v1/projects/{project_id}/forms/{form_id_str}.svc/Submissions"
-        response = self.fetch_with_retries(url, auth, params=params)
-        if response.status_code == 200:
-            data = response.json()
-            data_list = data.get("value")
-            if data_list:
-                self.dlg.odkProgressBar.setValue(100)
-                for datum in data_list:
-                    flat_data = self.flatten_odk_json(datum)
-                    feature = self.get_odk_geo_data(flat_data, geo_field)
-                    if feature:
-                        feature_collection["features"].append(feature)
-                if (
-                    feature_collection["features"]
-                    and len(feature_collection["features"]) > 0
-                ):
-                    self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
 
-                    self.dlg.odkOkButton.setEnabled(True)
+        url = f"https://{api_url}/v1/projects/{project_id}/forms/{form_id_str}.svc/Submissions"
+        hasData = True
+
+        while hasData:
+            response = self.fetch_with_retries(url, auth, params)
+            if response.status_code == 200:
+                self.dlg.gtsProgressBar.setValue(50)
+                data = response.json()
+                data_list = data.get("value")
+                if data_list:
+                    self.dlg.odkProgressBar.setValue(100)
+                    for datum in data_list:
+                        flat_data = self.flatten_odk_json(datum)
+                        feature = self.get_odk_geo_data(flat_data, geo_field)
+                        if feature:
+                            feature_collection["features"].append(feature)
                 else:
+                    hasData = False
+                    self.dlg.gtsProgressBar.setValue(100)
                     self.iface.messageBar().pushMessage(
                         "Notice",
-                        f"The selected geo field doesn't have geo data",
+                        f"No Data Available",
                         level=Qgis.Warning,
                         duration=10,
                     )
                     self.dlg.odkOkButton.setEnabled(True)
             else:
+                hasData = False
+                self.dlg.gtsProgressBar.setValue(0)
                 self.iface.messageBar().pushMessage(
-                    "Notice", f"No Data Available", level=Qgis.Warning
+                    "Error",
+                    f"Error fetching data: {response.status_code}",
+                    level=Qgis.Critical,
+                    duration=10,
                 )
+                self.dlg.odkOkButton.setEnabled(True)
+
+            params["$skip"] += params["$top"]
+
+        if feature_collection["features"] and len(feature_collection["features"]) > 0:
+            self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
+            self.dlg.odkOkButton.setEnabled(True)
+            self.dlg.odkProgressBar.setValue(0)
         else:
             self.iface.messageBar().pushMessage(
-                "Error",
-                f"Error fetching data: {response.status_code}",
-                level=Qgis.Critical,
+                "Notice",
+                f"The selected geo field doesn't have geo data",
+                level=Qgis.Warning,
+                duration=10,
             )
+            self.dlg.odkOkButton.setEnabled(True)
 
     # Slots to handle signals
     def on_data_fetched(self, data):
@@ -2091,6 +2196,9 @@ class AfpolGIS(QObject):
 
     def handle_data_fetched(self, data):
         formID = self.dlg.comboOnaForms.currentData()
+        form_str = self.dlg.comboOnaForms.currentText()
+        cleaned_form_str = "_".join(form_str.split(" "))
+
         geo_field = self.curr_geo_field
 
         self.dlg.app_logs.appendPlainText("Data Fetch Complete, Building GeoJSON... \n")
@@ -2120,7 +2228,9 @@ class AfpolGIS(QObject):
                 self.dlg.app_logs.appendPlainText(
                     "Building GeoJSON Complete. Adding Layer to Map...\n"
                 )
-                self.load_data_to_qgis(feature_collection, formID, geo_field)
+                self.load_data_to_qgis(feature_collection, cleaned_form_str, geo_field)
+
+                self.dlg.onaProgressBar.setValue(0)
                 if not self.ona_sync_timer.isActive():
                     self.dlg.onaOkButton.setEnabled(True)
             else:
@@ -2930,13 +3040,11 @@ class AfpolGIS(QObject):
                     and existing_layer
                 ):
                     if self.vlayers.get(layer_name):
-                        self.vlayers[layer_name] = {
-                            "syncData": True,
-                            "vlayer": vlayer
-                        }
+                        self.vlayers[layer_name] = {"syncData": True, "vlayer": vlayer}
                     self.update_layer_data(layer_name, geojson_data, vlayer)
                 elif (
-                    not self.vlayers.get(layer_name) or not self.vlayers.get(layer_name).get("syncData")
+                    not self.vlayers.get(layer_name)
+                    or not self.vlayers.get(layer_name).get("syncData")
                 ) and not existing_layer:
                     # Start editing to add fields and features
                     vlayer.startEditing()
@@ -2979,10 +3087,7 @@ class AfpolGIS(QObject):
                     )
 
                     if not self.vlayers.get(layer_name):
-                        self.vlayers[layer_name] = {
-                            "syncData": False,
-                            "vlayer": vlayer
-                        }
+                        self.vlayers[layer_name] = {"syncData": False, "vlayer": vlayer}
 
         # Close and reset the dialog after layer is successfully added
         # if int(self.dlg.mQgsDoubleSpinBox.value()):
@@ -3106,6 +3211,7 @@ class AfpolGIS(QObject):
 
         self.stop_workers()
 
+        self.dlg.btnFetchOnaForms.setText("Connect")
         self.dlg.onaOkButton.setEnabled(True)
         self.dlg.btnFetchOnaForms.setEnabled(True)
 
@@ -3132,3 +3238,6 @@ class AfpolGIS(QObject):
         self.dlg.koboOkButton.setEnabled(True)
         self.dlg.btnFetchKoboForms.setEnabled(True)
         self.dlg.comboKoboForms.setEnabled(True)
+
+    def reset_gts_inputs(self):
+        self.fetch_gts_tracking_rounds_data_handler()
