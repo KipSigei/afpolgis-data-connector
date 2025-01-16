@@ -1643,6 +1643,14 @@ class AfpolGIS(QObject):
             )
             self.dlg.onaProgressBar.setValue(math.ceil(progress))
 
+    def handle_geo_fields_no_data(self, msg):
+        if isinstance(msg, str):
+            self.dlg.app_logs.appendPlainText(msg)
+            self.iface.messageBar().pushMessage(
+                "Notice", msg, level=Qgis.Warning, duration=10
+            )
+            self.reset_inputs()
+
     def fetch_ona_form_geo_fields(self):
         # clear geo fields combo box
 
@@ -1678,6 +1686,9 @@ class AfpolGIS(QObject):
             )
             self.fetch_ona_geo_fields_worker.progress_updated.connect(
                 self.handle_geo_fields_progress
+            )
+            self.fetch_ona_geo_fields_worker.no_data.connect(
+                self.handle_geo_fields_no_data
             )
             self.fetch_ona_geo_fields_worker.count_and_date_fields_fetched.connect(
                 self.handle_date_and_count_fields
@@ -3133,6 +3144,7 @@ class AfpolGIS(QObject):
 
         self.stop_workers()
 
+        self.dlg.btnFetchOnaForms.setText("Connect")
         self.dlg.onaOkButton.setEnabled(True)
         self.dlg.btnFetchOnaForms.setEnabled(True)
 
