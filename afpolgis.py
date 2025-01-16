@@ -339,9 +339,76 @@ class AfpolGIS(QObject):
             "note",
         ]
 
-        self.dlg.about_text.setText(
-            "<h4>Overview</h4><p>This software has been developed by the WHO AFRO GIS Team. It is designed to extract, transform and load data from OnaData, ODK, KoboToolbox, ES World, GTS and DHIS then adds as a layer on QGIS. It also has the capability of filtering data by date ranges as well as synchronizing real time data from ODK, OnaData and KoboToolbox. Note that it could take a while to load large datasets depending on the performance of the API Servers</p>"
-        )
+        html_content = """
+        <h2>AfPoLGIS Data Connector</h2>
+        <p>
+            This software has been developed by the WHO AFRO GIS Team. It is designed to extract, transform and load data from OnaData, ODK, KoboToolbox, ES World, GTS and DHIS then adds as a layer on QGIS. It also has the capability of filtering data by date ranges as well as synchronizing real time data from ODK, OnaData and KoboToolbox. Note that it could take a while to load large datasets depending on the performance of the API Servers.
+        </p>
+        <h3>Purpose and Features</h3>
+        <ul>
+            <li>Access and integrate spatial data from multiple external platforms.</li>
+            <li>Simplify spatial data workflows for African administrative and policy geography.</li>
+            <li>Tools for selecting and visualizing administrative boundaries, catchments, and other geospatial datasets.</li>
+        </ul>
+        <h3>Author Information</h3>
+        <p>
+            <strong>Developer:</strong> Kipchirchir Cheroigin<br>
+            <strong>Contact:</strong> <a href="mailto:kcheroigin@gmail.com">kcheroigin@gmail.com</a>
+        </p>
+        <h3>License</h3>
+        <p>
+            This plugin is released under the GNU v3.0 License.<br>
+            For details, refer to the <a href="https://github.com/KipSigei/afpolgis-data-connector/blob/main/LICENSE" target="_blank">LICENSE</a> file in the repository.
+        </p>
+        <h3>Version Information</h3>
+        <p><strong>Version:</strong> 2.2.0<br><strong>Release Date:</strong> 15/01/2025</p>
+        <h3>Supported Data Sources</h3>
+        <ul>
+            <li>ODK</li>
+            <li>OnaData</li>
+            <li>Kobo</li>
+            <li>ES World</li>
+            <li>GTS</li>
+            <li>DHIS</li>
+        </ul>
+        <h3>How to Use</h3>
+        <p>
+            Follow these steps to connect to external data sources and manage data sync:
+        </p>
+        <ol>
+            <li>
+                <strong>Authentication:</strong>  
+                Input the API Base Domain of choice, your username, and password in the <em>Authentication</em> section. Click <strong>Connect</strong> to establish a connection with the selected data source.
+            </li>
+            <li>
+                <strong>Dataset/Form Selection:</strong>  
+                Depending on the data source, Use the <em>Select Form</em> or <em>Select Category</em> dropdown to choose a specific form or dataset.
+            </li>
+            <li>
+                <strong>Sync Options:</strong>  
+                To Configure synchronization preferences for ODK, OnaData or Kobo, including:
+                <ul>
+                    <li><strong>Date Range From:</strong> Specify the start date for data synchronization.</li>
+                    <li><strong>Date Range To:</strong> Specify the end date for data synchronization.</li>
+                    <li><strong>Sync Interval:</strong> Set the time interval for periodic data syncs.</li>
+                    <li><strong>Page Size:</strong> Adjust the number of records fetched per API call.</li>
+                </ul>
+            </li>
+            <li>
+                Click <strong>OK</strong> to start the sync process or <strong>Cancel</strong> to abort.
+            </li>
+        </ol>
+        <p>
+            Monitor the sync progress through the progress bar at the bottom of the interface or by accessing the Logs tab.
+        </p>
+        <h3>Repository and Documentation</h3>
+        <p>
+            <a href="https://github.com/KipSigei/afpolgis-data-connector" target="_blank">GitHub Repository</a><br>
+            For issues or feature requests, open an issue in the repository.
+        </p>
+        """
+
+        self.dlg.about_text.setText(html_content)
 
         # Initialize QThreadPool for managing worker threads
         self.thread_pool = QThreadPool.globalInstance()
