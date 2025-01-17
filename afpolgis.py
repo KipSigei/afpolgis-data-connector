@@ -1249,9 +1249,6 @@ class AfpolGIS(QObject):
                     self.dlg.koboOkButton.setEnabled(True)
                 else:
                     hasData = False
-                    self.iface.messageBar().pushMessage(
-                        "Notice", "No Data Found", level=Qgis.Warning
-                    )
                     self.dlg.koboOkButton.setEnabled(True)
                     break
             else:
@@ -1274,6 +1271,14 @@ class AfpolGIS(QObject):
 
             self.load_data_to_qgis(feature_collection, cleaned_asset_name, geo_field)
             self.dlg.koboPorgressBar.setValue(0)
+        else:
+            self.iface.messageBar().pushMessage(
+                "Notice",
+                f"The selected geo field doesn't have geo data",
+                level=Qgis.Warning,
+                duration=10,
+            )
+            self.dlg.koboOkButton.setEnabled(True)
 
     def fetch_kobo_date_range_fields(self, api_url, username, password, asset_id):
         auth = HTTPBasicAuth(username, password)
@@ -2139,12 +2144,6 @@ class AfpolGIS(QObject):
                 else:
                     hasData = False
                     self.dlg.gtsProgressBar.setValue(100)
-                    self.iface.messageBar().pushMessage(
-                        "Notice",
-                        f"No Data Available",
-                        level=Qgis.Warning,
-                        duration=10,
-                    )
                     self.dlg.odkOkButton.setEnabled(True)
             else:
                 hasData = False
