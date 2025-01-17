@@ -754,7 +754,7 @@ class AfpolGIS(QObject):
 
         while hasData:
             params = [
-                ("fields", "id,name,children[id,name],dataSets[id,name],geometry"),
+                ("fields", "id,name,lastUpdated,dimensionItemType,shortName,displayName,children[id,name],dataSets[id,name],geometry"),
                 ("filter", f"level:eq:{cleaned_adm_lvl}"),
                 ("filter", "children:gte:0"),
                 ("page", page),
@@ -781,7 +781,13 @@ class AfpolGIS(QObject):
                                 {
                                     "type": "Feature",
                                     "geometry": geometry,
-                                    "properties": {},
+                                    "properties": {
+                                        "name": datum.get("name"),
+                                        "lastUpdated": datum.get("lastUpdated"),
+                                        "dimensionItemType": datum.get("dimensionItemType"),
+                                        "shortName": datum.get("shortName"),
+                                        "displayName": datum.get("displayName")
+                                    },
                                 }
                             )
                 elif not pager.get("nextPage"):
@@ -824,6 +830,7 @@ class AfpolGIS(QObject):
 
         # Disable OK button
         self.dlg.gtsOkButton.setEnabled(False)
+        self.dlg.gtsOkButton.repaint()
 
         selected_tracking_round = self.dlg.comboGTSTrackingRounds.currentData()
 
@@ -879,18 +886,7 @@ class AfpolGIS(QObject):
                                 )
                     else:
                         hasData = False
-                        self.dlg.gtsProgressBar.setValue(100)
-                        if (
-                            feature_collection["features"]
-                            and len(feature_collection["features"]) == 0
-                        ):
-                            self.dlg.gtsProgressBar.setValue(0)
-                            self.iface.messageBar().pushMessage(
-                                "Notice",
-                                "No Data Found",
-                                level=Qgis.Warning,
-                                duration=15,
-                            )
+                        self.dlg.gtsProgressBar.setValue(0)
                         self.dlg.gtsOkButton.setEnabled(True)
                 else:
                     hasData = False
@@ -899,7 +895,7 @@ class AfpolGIS(QObject):
                         "Error",
                         f"Error fetching data: {response.status_code}",
                         level=Qgis.Critical,
-                        duration=15,
+                        duration=10,
                     )
                     self.dlg.gtsOkButton.setEnabled(True)
 
@@ -912,6 +908,18 @@ class AfpolGIS(QObject):
                 self.load_data_to_qgis(
                     feature_collection, "gts", "_".join(single_round_name.split(" "))
                 )
+                self.dlg.gtsProgressBar.setValue(0)
+            else:
+                self.dlg.app_logs.appendPlainText(f"No available Geo Data for Selected Tracking Round")
+                self.iface.messageBar().pushMessage(
+                    "Notice",
+                    f"No available Geo Data for Selected Tracking Round",
+                    level=Qgis.Warning,
+                    duration=10,
+                )
+                self.dlg.gtsOkButton.setEnabled(True)
+                self.dlg.gtsOkButton.repaint()
+
                 self.dlg.gtsProgressBar.setValue(0)
 
     def handle_gts_cancel_btn(self):
@@ -1272,6 +1280,10 @@ class AfpolGIS(QObject):
             self.load_data_to_qgis(feature_collection, cleaned_asset_name, geo_field)
             self.dlg.koboPorgressBar.setValue(0)
         else:
+            self.dlg.app_logs.appendPlainText(
+                "The selected geo field doesn't have geo data"
+            )
+
             self.iface.messageBar().pushMessage(
                 "Notice",
                 f"The selected geo field doesn't have geo data",
@@ -2235,6 +2247,13 @@ class AfpolGIS(QObject):
             else:
                 self.dlg.app_logs.appendPlainText(
                     "The selected geo field doesn't have geo data"
+                )
+
+                self.iface.messageBar().pushMessage(
+                    "Notice",
+                    f"The selected geo field doesn't have geo data",
+                    level=Qgis.Warning,
+                    duration=10,
                 )
                 if not self.ona_sync_timer.isActive():
                     self.dlg.onaOkButton.setEnabled(True)
