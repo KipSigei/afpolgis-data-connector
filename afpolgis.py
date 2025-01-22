@@ -2344,6 +2344,8 @@ class AfpolGIS(QObject):
         self.dlg.onaOkButton.setEnabled(False)
         api_url = self.dlg.onadata_api_url.text()
         formID = self.dlg.comboOnaForms.currentData()
+        form_str = self.dlg.comboOnaForms.currentText()
+        cleaned_form_str = "_".join(form_str.split(" "))
         username = self.dlg.onadata_username.text()
         password = self.dlg.onaMLineEdit.text()
         page_size = int(self.dlg.onaPageSize.value())
@@ -2381,8 +2383,11 @@ class AfpolGIS(QObject):
 
         if formID:
             if hasattr(self, "vlayers"):
-                if self.vlayers.get(f"{formID}_{geo_field}"):
-                    self.vlayers[f"{formID}_{geo_field}"]["syncData"] = True
+                if self.vlayers.get(f"{cleaned_form_str}_{geo_field}"):
+                    self.vlayers[f"{cleaned_form_str}_{geo_field}"] = {
+                        "syncData": True,
+                        "vlayer": self.vlayers.get(f"{cleaned_form_str}_{geo_field}").get("vlayer")
+                    }
 
             self.ona_worker = OnaRequestThread(
                 url,
@@ -3057,8 +3062,6 @@ class AfpolGIS(QObject):
                     and self.vlayers.get(layer_name).get("syncData")
                     and existing_layer
                 ):
-                    if self.vlayers.get(layer_name):
-                        self.vlayers[layer_name] = {"syncData": True, "vlayer": vlayer}
                     self.update_layer_data(layer_name, geojson_data, vlayer)
                 elif (
                     not self.vlayers.get(layer_name)
