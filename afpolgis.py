@@ -629,17 +629,21 @@ class AfpolGIS(QObject):
 
             url = f"https://{api_url}/api/analytics.json"
 
+            self.dlg.dhisProgressBar.setValue(20)
+
             response = self.fetch_with_retries(url, auth, params)
 
             if response.status_code == 200:
                 data = response.json()
                 if data:
+                    self.dlg.dhisProgressBar.setValue(100)
                     rows = data.get("rows")
                     if rows:
                         self.load_dhis_data_to_qgis(
                             data, curr_org_unit_id, curr_indicator_id
                         )
                         self.dlg.dhisOkButton.setEnabled(True)
+                        self.dlg.dhisProgressBar.setValue(0)
                     else:
                         self.iface.messageBar().pushMessage(
                             "Notice",
@@ -648,6 +652,7 @@ class AfpolGIS(QObject):
                             duration=10,
                         )
                         self.dlg.dhisOkButton.setEnabled(True)
+                        self.dlg.dhisProgressBar.setValue(0)
             else:
                 self.iface.messageBar().pushMessage(
                     "Error",
@@ -656,6 +661,7 @@ class AfpolGIS(QObject):
                     duration=10,
                 )
                 self.dlg.dhisOkButton.setEnabled(True)
+                self.dlg.dhisProgressBar.setValue(0)
 
     def fetch_dhis_org_units_handler(self):
         api_url = self.dlg.dhis_api_url.text()
@@ -754,7 +760,10 @@ class AfpolGIS(QObject):
 
         while hasData:
             params = [
-                ("fields", "id,name,lastUpdated,dimensionItemType,shortName,displayName,children[id,name],dataSets[id,name],geometry"),
+                (
+                    "fields",
+                    "id,name,lastUpdated,dimensionItemType,shortName,displayName,children[id,name],dataSets[id,name],geometry",
+                ),
                 ("filter", f"level:eq:{cleaned_adm_lvl}"),
                 ("filter", "children:gte:0"),
                 ("page", page),
@@ -766,7 +775,16 @@ class AfpolGIS(QObject):
             if response.status_code == 200:
                 data = response.json()
                 result = data.get("organisationUnits")
+
+                # handle progress
                 pager = data.get("pager")
+                total_pages = (pager.get("total") + pager.get("pageSize") - 1) // pager.get("pageSize")
+                progress = (
+                    (int(page) / int(total_pages)) * 100 if int(total_pages) > 1 else 100
+                )
+                self.dlg.dhisProgressBar.setValue(math.ceil(progress) * 2)
+                self.dlg.dhisProgressBar.repaint()
+
                 if result:
                     for datum in result:
                         org_id = datum.get("id")
@@ -784,18 +802,22 @@ class AfpolGIS(QObject):
                                     "properties": {
                                         "name": datum.get("name"),
                                         "lastUpdated": datum.get("lastUpdated"),
-                                        "dimensionItemType": datum.get("dimensionItemType"),
+                                        "dimensionItemType": datum.get(
+                                            "dimensionItemType"
+                                        ),
                                         "shortName": datum.get("shortName"),
-                                        "displayName": datum.get("displayName")
+                                        "displayName": datum.get("displayName"),
                                     },
                                 }
                             )
                 elif not pager.get("nextPage"):
                     hasData = False
+                    self.dlg.dhisProgressBar.setValue(0)
                     self.dlg.btnFetchDhisOrgUnits.setEnabled(True)
                     self.dlg.btnFetchDhisOrgUnits.setText("Connect")
                     self.dlg.btnFetchDhisOrgUnits.repaint()
                 else:
+                    self.dlg.dhisProgressBar.setValue(0)
                     self.iface.messageBar().pushMessage(
                         "Notice", "No Data Found", level=Qgis.Warning
                     )
@@ -804,6 +826,7 @@ class AfpolGIS(QObject):
                     self.dlg.btnFetchDhisOrgUnits.repaint()
                     break
             else:
+                self.dlg.dhisProgressBar.setValue(0)
                 self.iface.messageBar().pushMessage(
                     "Error",
                     f"Error fetching data: {response.status_code}",
@@ -820,8 +843,17 @@ class AfpolGIS(QObject):
             self.load_data_to_qgis(
                 feature_collection, "dhis", f"level_{cleaned_adm_lvl}"
             )
-
-        return
+        else:
+            self.dlg.app_logs.appendPlainText(
+                "No Available Geometry to Display"
+            )
+            self.iface.messageBar().pushMessage(
+                "Notice",
+                f"No Available Geometry to Display",
+                level=Qgis.Warning,
+                duration=10,
+            )
+            self.dlg.dhisOkButton.setEnabled(True)
 
     def fetch_gts_tracking_rounds_data_handler(self):
         api_url = self.dlg.gts_api_url.text()
@@ -851,13 +883,21 @@ class AfpolGIS(QObject):
             params = {"$top": 50000, "$skip": 0}
 
             hasData = True
+            page = 0
 
             while hasData:
+                page += 1
+                max_pages = 100
+
+                progress = (
+                    (int(page) / max_pages) * 100 if int(max_pages) > 1 else 100
+                )
+                self.dlg.gtsProgressBar.setValue(math.ceil(progress))
+                self.dlg.gtsProgressBar.repaint()
+
                 self.dlg.gtsOkButton.setEnabled(False)
-                self.dlg.gtsProgressBar.setValue(20)
                 response = self.fetch_with_retries(url, auth, params)
                 if response.status_code == 200:
-                    self.dlg.gtsProgressBar.setValue(50)
                     data = response.json()
                     data_list = data.get("value")
 
@@ -905,12 +945,15 @@ class AfpolGIS(QObject):
                 feature_collection["features"]
                 and len(feature_collection["features"]) > 0
             ):
+                self.dlg.gtsProgressBar.setValue(100)
                 self.load_data_to_qgis(
                     feature_collection, "gts", "_".join(single_round_name.split(" "))
                 )
                 self.dlg.gtsProgressBar.setValue(0)
             else:
-                self.dlg.app_logs.appendPlainText(f"No available Geo Data for Selected Tracking Round")
+                self.dlg.app_logs.appendPlainText(
+                    f"No available Geo Data for Selected Tracking Round"
+                )
                 self.iface.messageBar().pushMessage(
                     "Notice",
                     f"No available Geo Data for Selected Tracking Round",
@@ -2386,7 +2429,9 @@ class AfpolGIS(QObject):
                 if self.vlayers.get(f"{cleaned_form_str}_{geo_field}"):
                     self.vlayers[f"{cleaned_form_str}_{geo_field}"] = {
                         "syncData": True,
-                        "vlayer": self.vlayers.get(f"{cleaned_form_str}_{geo_field}").get("vlayer")
+                        "vlayer": self.vlayers.get(
+                            f"{cleaned_form_str}_{geo_field}"
+                        ).get("vlayer"),
                     }
 
             self.ona_worker = OnaRequestThread(
@@ -2707,18 +2752,12 @@ class AfpolGIS(QObject):
             elif isinstance(value, list):
                 for i, item in enumerate(value):
                     if isinstance(item, dict):
-                        if i == 0:
-                            # Don't append [0] for the first item
-                            flattened.update(self.flatten_dict(item, new_key, sep=sep))
-                        else:
-                            flattened.update(
-                                self.flatten_dict(item, f"{new_key}[{i}]", sep=sep)
-                            )
+                        flattened.update(
+                            self.flatten_dict(item, f"{new_key}[{i + 1}]", sep=sep)
+                        )
+
                     else:
-                        if i == 0:
-                            flattened[new_key] = item
-                        else:
-                            flattened[f"{new_key}[{i}]"] = item
+                        flattened[f"{new_key}[{i + 1}]"] = item
             else:
                 flattened[new_key] = value
 
@@ -2764,17 +2803,15 @@ class AfpolGIS(QObject):
 
     def get_geo_data(self, datum, geom_field, feature_collection):
         field_keys = datum.keys()
-        filtered_datum = {
-            key: value
-            for key, value in datum.items()
-            if not isinstance(value, list)
-            and not isinstance(value, dict)
-            and key not in self.geo_fields
-        }
+        flattened_data = self.flatten_dict(datum)
+
         if geom_field in field_keys:
             # this means that the geo field is not inside a repeat
             # build the corresponding geometry/feature collection
             geom = datum.get(geom_field, "")
+            filtered_datum = {
+                key: value for key, value in flattened_data.items() if key != geom_field
+            }
             # build feature collection
             self.build_feature_collection(filtered_datum, geom, feature_collection)
         else:
@@ -2788,8 +2825,13 @@ class AfpolGIS(QObject):
             if repeat_geo_arr:
                 for f in repeat_geo_arr:
                     nested_geom = flattened_data.get(f, "")
+                    filtered_datum = {
+                        key: value
+                        for key, value in flattened_data.items()
+                        if f in key.split("/")
+                    }
                     self.build_feature_collection(
-                        filtered_datum, nested_geom, feature_collection
+                        flattened_data, nested_geom, feature_collection
                     )
 
     def getTheGeoJson(
