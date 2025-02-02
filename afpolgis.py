@@ -869,6 +869,9 @@ class AfpolGIS(QObject):
         tracking_round_data = self.dlg.comboGTSFieldActivities.currentData()
 
         if selected_tracking_round and tracking_round_data:
+            field_activity_text = self.dlg.comboGTSFieldActivities.currentText()
+            cleaned_field_act_text = "_".join(field_activity_text.split(" "))
+
             single_tracking_url = selected_tracking_round.get("url")
             single_round_name = selected_tracking_round.get("round_name")
 
@@ -947,7 +950,7 @@ class AfpolGIS(QObject):
             ):
                 self.dlg.gtsProgressBar.setValue(100)
                 self.load_data_to_qgis(
-                    feature_collection, "gts", "_".join(single_round_name.split(" "))
+                    feature_collection, f"gts_{cleaned_field_act_text}", "_".join(single_round_name.split(" "))
                 )
                 self.dlg.gtsProgressBar.setValue(0)
             else:
@@ -1852,7 +1855,6 @@ class AfpolGIS(QObject):
                         self.dlg.comboODKForms.addItem(
                             form_name, {"form_id": form_id, "project_id": project_id}
                         )
-                        self.dlg.comboODKForms.setItemText(i, form_id)
                         if not self.odk_forms_to_projects_map.get(form_id):
                             self.odk_forms_to_projects_map[form_id] = proj_id
                     self.dlg.btnFetchODKForms.setEnabled(True)
