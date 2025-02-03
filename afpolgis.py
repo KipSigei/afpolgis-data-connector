@@ -3161,33 +3161,12 @@ class AfpolGIS(QObject):
                     if not self.vlayers.get(layer_name):
                         self.vlayers[layer_name] = {"syncData": False, "vlayer": vlayer}
 
-        # Close and reset the dialog after layer is successfully added
-        # if int(self.dlg.mQgsDoubleSpinBox.value()):
-        #     if self.vlayer.get("layer"):
-        #         self.vlayer["syncData"] = True
-        #     self.fetch_data_async(
-        #         api_url,
-        #         formID,
-        #         username,
-        #         password,
-        #         self.curr_geo_field,
-        #         page_size,
-        #         self.directory,
-        #     )
-
-        #     self.dlg.progress_bar.setValue(0)
-        # else:
-        #     pass
-        # self.reset_inputs()  # Reset input fields
-        # self.dlg.close()  # Close the dialog
-
     def update_layer_data(self, layer_name, geojson_data, vlayer):
         """Fetch new data and update the existing layer in QGIS."""
         layers = QgsProject.instance().mapLayersByName(layer_name)
 
         if layers:
             vlayer = layers[0]
-
             vlayer.startEditing()
 
             # Collect all unique property keys from the new data
