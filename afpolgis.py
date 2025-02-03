@@ -1325,6 +1325,7 @@ class AfpolGIS(QObject):
 
             self.load_data_to_qgis(feature_collection, cleaned_asset_name, geo_field)
             self.dlg.koboPorgressBar.setValue(0)
+            self.dlg.koboOkButton.setEnabled(True)
         else:
             self.dlg.app_logs.appendPlainText(
                 "The selected geo field doesn't have geo data"
@@ -1336,6 +1337,7 @@ class AfpolGIS(QObject):
                 level=Qgis.Warning,
                 duration=10,
             )
+            self.dlg.koboPorgressBar.setValue(0)
             self.dlg.koboOkButton.setEnabled(True)
 
     def fetch_kobo_date_range_fields(self, api_url, username, password, asset_id):
@@ -1970,7 +1972,10 @@ class AfpolGIS(QObject):
         self.dlg.odkOkButton.repaint()
 
         api_url = self.dlg.odk_api_url.text()
-        form_id_str = self.dlg.comboODKForms.currentText()
+        form_data = self.dlg.comboODKForms.currentData()
+        form_id_str = None
+        if form_data:
+            form_id_str = form_data.get("form_id")
         username = self.dlg.odk_username.text()
         password = self.dlg.odkmLineEdit.text()
         geo_field = self.dlg.comboODKGeoFields.currentText()
@@ -2022,18 +2027,19 @@ class AfpolGIS(QObject):
             # if odk_sync_interval > 0:
             #     self.odk_sync_timer.start(odk_sync_interval * 1000)
 
-            self.fetch_and_save_odk_data(
-                api_url,
-                username,
-                password,
-                form_id_str,
-                geo_field,
-                odk_from_timestamp,
-                odk_to_timestamp,
-            )
+            if form_id_str:
+                self.fetch_and_save_odk_data(
+                    api_url,
+                    username,
+                    password,
+                    form_id_str,
+                    geo_field,
+                    odk_from_timestamp,
+                    odk_to_timestamp,
+                )
 
-            if odk_sync_interval > 0:
-                self.odk_sync_timer.start(odk_sync_interval * 1000)
+                if odk_sync_interval > 0:
+                    self.odk_sync_timer.start(odk_sync_interval * 1000)
 
     def is_valid_wkt(self, wkt_string):
         # Define basic geometry types
@@ -2227,6 +2233,7 @@ class AfpolGIS(QObject):
                 duration=10,
             )
             self.dlg.odkOkButton.setEnabled(True)
+            self.dlg.odkProgressBar.setValue(0)
 
     # Slots to handle signals
     def on_data_fetched(self, data):
