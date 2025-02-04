@@ -1526,6 +1526,11 @@ class AfpolGIS(QObject):
 
         self.dlg.esOkButton.setEnabled(False)
 
+        sites_feature_collection = {
+            "type": "FeatureCollection",
+            "features": [],
+        }
+
         if topography_param == 'sites':
             countries_url = f"https://{api_url}/api/{es_api_version}-prod/admin/countries"
             self.dlg.esProgressBar.setValue(20)
@@ -1535,7 +1540,7 @@ class AfpolGIS(QObject):
                 if data:
                     features = data.get("features")
                     if features:
-                        site_admin_tokens = [f.get("properties").get("token") for f in features if "d50af79e3681b3687960509c27499caa" in f.get("properties").get("token")]
+                        site_admin_tokens = [f.get("properties").get("token") for f in features]
                         tokens_str = ",".join(site_admin_tokens)
                         params["export"] = "geojson"
                         params["admin"] = tokens_str
@@ -1568,19 +1573,46 @@ class AfpolGIS(QObject):
                         level=Qgis.Warning,
                         duration=10
                     )
-        
+
         if export_url:
             self.dlg.esProgressBar.setValue(50)
-            response = self.fetch_with_retries(export_url, params=params)
 
-            if response.status_code == 200:
+            if site_admin_tokens:
+                quater = len(site_admin_tokens) // 4  # Find the midpoint
+                first = site_admin_tokens[:quater]
+                second = site_admin_tokens[quater: 2 * quater]
+                third = site_admin_tokens[2 * quater: 3 * quater]
+                fourth = site_admin_tokens[3 * quater:]
+
+                for admin_tokens in [first, second, third, fourth]:
+                    token_str = ",".join(admin_tokens)
+
+                    response = self.fetch_with_retries(export_url, params={
+                        "export": "geojson",
+                        "admin": token_str
+                    })
+    
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data:
+                            features = data.get("features")
+                            sites_feature_collection["features"].extend(features)
+                    else:
+                        self.dlg.esProgressBar.setValue(0)
+                        self.dlg.esOkButton.setEnabled(True)
+                        self.iface.messageBar().pushMessage(
+                            "Error",
+                            f"Error fetching data: {response.status_code}",
+                            level=Qgis.Critical,
+                        ) 
+
                 self.dlg.esProgressBar.setValue(100)
-                feature_collection = response.json()
+
                 if (
-                    feature_collection["features"]
-                    and len(feature_collection["features"]) > 0
+                    sites_feature_collection["features"]
+                    and len(sites_feature_collection["features"]) > 0
                 ):
-                    self.load_data_to_qgis(feature_collection, "es", topography_param)
+                    self.load_data_to_qgis(sites_feature_collection, "es", topography_param)
                     self.dlg.esProgressBar.setValue(0)
                     self.dlg.esOkButton.setEnabled(True)
                 else:
@@ -1589,14 +1621,34 @@ class AfpolGIS(QObject):
                         "Notice", "No Data Found", level=Qgis.Warning
                     )
                     self.dlg.esOkButton.setEnabled(True)
+
             else:
-                self.dlg.esProgressBar.setValue(0)
-                self.dlg.esOkButton.setEnabled(True)
-                self.iface.messageBar().pushMessage(
-                    "Error",
-                    f"Error fetching data: {response.status_code}",
-                    level=Qgis.Critical,
-                )
+                response = self.fetch_with_retries(export_url, params=params)
+
+                if response.status_code == 200:
+                    self.dlg.esProgressBar.setValue(100)
+                    feature_collection = response.json()
+                    if (
+                        feature_collection["features"]
+                        and len(feature_collection["features"]) > 0
+                    ):
+                        self.load_data_to_qgis(feature_collection, "es", topography_param)
+                        self.dlg.esProgressBar.setValue(0)
+                        self.dlg.esOkButton.setEnabled(True)
+                    else:
+                        self.dlg.esProgressBar.setValue(0)
+                        self.iface.messageBar().pushMessage(
+                            "Notice", "No Data Found", level=Qgis.Warning
+                        )
+                        self.dlg.esOkButton.setEnabled(True)
+                else:
+                    self.dlg.esProgressBar.setValue(0)
+                    self.dlg.esOkButton.setEnabled(True)
+                    self.iface.messageBar().pushMessage(
+                        "Error",
+                        f"Error fetching data: {response.status_code}",
+                        level=Qgis.Critical,
+                    )
 
     def on_odk_forms_combo_box_change(self):
         form_data = self.dlg.comboODKForms.currentData()
