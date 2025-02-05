@@ -1518,55 +1518,155 @@ class AfpolGIS(QObject):
         es_api_version = self.dlg.esAPIVersion.text()
         topography = self.dlg.combESTopology.currentText()
         topography_param = topography.lower()
+        site_admin_tokens = []
+        lab_ids = []
+        params = dict()
 
-        url = f"https://{api_url}/api/{es_api_version}-prod/{topography_param}"
+        export_url = None
 
-        self.dlg.esProgressBar.setValue(20)
-        response = self.fetch_with_retries(url)
+        self.dlg.esOkButton.setEnabled(False)
 
-        feature_collection = {
+        sites_feature_collection = {
             "type": "FeatureCollection",
             "features": [],
         }
 
-        if response.status_code == 200:
-            data = response.json()
-            self.dlg.esProgressBar.setValue(100)
-            if data:
-                for datum in data:
-                    geometry = datum.get("geometry")
-                    if geometry:
-                        try:
-                            del datum["geometry"]
-                        except ValueError:
-                            pass
-
-                        flattened_props = self.flatten_es_props(datum)
-                        feature_collection["features"].append(
-                            {
-                                "type": "Feature",
-                                "geometry": geometry,
-                                "properties": flattened_props,
-                            }
+        if topography_param == 'sites':
+            countries_url = f"https://{api_url}/api/{es_api_version}-prod/admin/countries"
+            self.dlg.esProgressBar.setValue(20)
+            response = self.fetch_with_retries(countries_url)
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    features = data.get("features")
+                    if features:
+                        site_admin_tokens = [f.get("properties").get("token") for f in features]
+                        tokens_str = ",".join(site_admin_tokens)
+                        params["export"] = "geojson"
+                        params["admin"] = tokens_str
+                        export_url = f"https://{api_url}/api/{es_api_version}-prod/sites"
+                    else:
+                        self.iface.messageBar().pushMessage(
+                            "Notice",
+                            "No Available Features",
+                            level=Qgis.Warning,
+                            duration=10
                         )
-                if (
-                    feature_collection["features"]
-                    and len(feature_collection["features"]) > 0
-                ):
-                    self.load_data_to_qgis(feature_collection, "es", topography_param)
-                    self.dlg.esProgressBar.setValue(0)
             else:
                 self.dlg.esProgressBar.setValue(0)
+                self.dlg.esOkButton.setEnabled(True)
                 self.iface.messageBar().pushMessage(
-                    "Notice", "No Data Found", level=Qgis.Warning
+                    "Error",
+                    f"Error fetching data: {response.status_code}",
+                    level=Qgis.Critical,
+                    duration=10
                 )
-        else:
-            self.dlg.esProgressBar.setValue(0)
-            self.iface.messageBar().pushMessage(
-                "Error",
-                f"Error fetching data: {response.status_code}",
-                level=Qgis.Critical,
-            )
+
+        if topography_param == 'labs':
+            labs_url = f"https://{api_url}/api/{es_api_version}-prod/{topography_param}"
+            self.dlg.esProgressBar.setValue(20)
+            response = self.fetch_with_retries(labs_url)
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    lab_ids = [datum.get("id") for datum in data]
+                    lab_ids_str = ",".join(lab_ids)
+
+                    params["export"] = "geojson"
+                    params["admin"] = lab_ids_str
+                    export_url = f"https://{api_url}/api/{es_api_version}-prod/labs"
+                else:
+                    self.iface.messageBar().pushMessage(
+                        "Notice",
+                        "No Available Data",
+                        level=Qgis.Warning,
+                        duration=10
+                    )
+            else:
+                self.dlg.esProgressBar.setValue(0)
+                self.dlg.esOkButton.setEnabled(True)
+                self.iface.messageBar().pushMessage(
+                    "Error",
+                    f"Error fetching data: {response.status_code}",
+                    level=Qgis.Critical,
+                    duration=10
+                )
+
+        if export_url:
+            self.dlg.esProgressBar.setValue(50)
+
+            if site_admin_tokens:
+                quater = len(site_admin_tokens) // 4  # Find the midpoint
+                first = site_admin_tokens[:quater]
+                second = site_admin_tokens[quater: 2 * quater]
+                third = site_admin_tokens[2 * quater: 3 * quater]
+                fourth = site_admin_tokens[3 * quater:]
+
+                for admin_tokens in [first, second, third, fourth]:
+                    token_str = ",".join(admin_tokens)
+
+                    response = self.fetch_with_retries(export_url, params={
+                        "export": "geojson",
+                        "admin": token_str
+                    })
+    
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data:
+                            features = data.get("features")
+                            sites_feature_collection["features"].extend(features)
+                    else:
+                        self.dlg.esProgressBar.setValue(0)
+                        self.dlg.esOkButton.setEnabled(True)
+                        self.iface.messageBar().pushMessage(
+                            "Error",
+                            f"Error fetching data: {response.status_code}",
+                            level=Qgis.Critical,
+                        ) 
+
+                self.dlg.esProgressBar.setValue(100)
+
+                if (
+                    sites_feature_collection["features"]
+                    and len(sites_feature_collection["features"]) > 0
+                ):
+                    self.load_data_to_qgis(sites_feature_collection, "es", topography_param)
+                    self.dlg.esProgressBar.setValue(0)
+                    self.dlg.esOkButton.setEnabled(True)
+                else:
+                    self.dlg.esProgressBar.setValue(0)
+                    self.iface.messageBar().pushMessage(
+                        "Notice", "No Data Found", level=Qgis.Warning
+                    )
+                    self.dlg.esOkButton.setEnabled(True)
+
+            else:
+                response = self.fetch_with_retries(export_url, params=params)
+
+                if response.status_code == 200:
+                    self.dlg.esProgressBar.setValue(100)
+                    feature_collection = response.json()
+                    if (
+                        feature_collection["features"]
+                        and len(feature_collection["features"]) > 0
+                    ):
+                        self.load_data_to_qgis(feature_collection, "es", topography_param)
+                        self.dlg.esProgressBar.setValue(0)
+                        self.dlg.esOkButton.setEnabled(True)
+                    else:
+                        self.dlg.esProgressBar.setValue(0)
+                        self.iface.messageBar().pushMessage(
+                            "Notice", "No Data Found", level=Qgis.Warning
+                        )
+                        self.dlg.esOkButton.setEnabled(True)
+                else:
+                    self.dlg.esProgressBar.setValue(0)
+                    self.dlg.esOkButton.setEnabled(True)
+                    self.iface.messageBar().pushMessage(
+                        "Error",
+                        f"Error fetching data: {response.status_code}",
+                        level=Qgis.Critical,
+                    )
 
     def on_odk_forms_combo_box_change(self):
         form_data = self.dlg.comboODKForms.currentData()
