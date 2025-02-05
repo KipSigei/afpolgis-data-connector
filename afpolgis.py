@@ -1552,6 +1552,15 @@ class AfpolGIS(QObject):
                             level=Qgis.Warning,
                             duration=10
                         )
+            else:
+                self.dlg.esProgressBar.setValue(0)
+                self.dlg.esOkButton.setEnabled(True)
+                self.iface.messageBar().pushMessage(
+                    "Error",
+                    f"Error fetching data: {response.status_code}",
+                    level=Qgis.Critical,
+                    duration=10
+                )
 
         if topography_param == 'labs':
             labs_url = f"https://{api_url}/api/{es_api_version}-prod/{topography_param}"
@@ -1573,6 +1582,15 @@ class AfpolGIS(QObject):
                         level=Qgis.Warning,
                         duration=10
                     )
+            else:
+                self.dlg.esProgressBar.setValue(0)
+                self.dlg.esOkButton.setEnabled(True)
+                self.iface.messageBar().pushMessage(
+                    "Error",
+                    f"Error fetching data: {response.status_code}",
+                    level=Qgis.Critical,
+                    duration=10
+                )
 
         if export_url:
             self.dlg.esProgressBar.setValue(50)
