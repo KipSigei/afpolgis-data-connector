@@ -3,6 +3,7 @@ import time
 import json
 import typing
 import xml.etree.ElementTree as ET
+import pandas as pd
 
 from PyQt5 import *
 from PyQt5.QtWidgets import *
@@ -10,6 +11,28 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 geo_types = ["geopoint", "geoshape", "geotrace"]
+
+
+def flatten_dict(data, parent_key="", sep="/"):
+    flattened = {}
+
+    for key, value in data.items():
+        new_key = f"{parent_key}{sep}{key}" if parent_key else key
+
+        if isinstance(value, dict):
+            # Recursively flatten the dictionary
+            flattened.update(flatten_dict(value, new_key, sep=sep))
+        elif isinstance(value, list):
+            for i, item in enumerate(value):
+                if isinstance(item, dict):
+                    flattened.update(flatten_dict(item, f"{new_key}[{i + 1}]", sep=sep))
+
+                else:
+                    flattened[f"{new_key}[{i + 1}]"] = item
+        else:
+            flattened[new_key] = value
+
+    return flattened
 
 
 def retrieve_all_geofields(fields, geo_fields_set, geo_fields_dict):
@@ -163,7 +186,16 @@ class OnaRequestThread(QThread):
                             self.no_data.emit("No Data Available for selected Form")
 
                 if combined_results:
-                    self.data_fetched.emit(combined_results)
+                    # flattten data
+                    flattened_data = [
+                        flatten_dict(_datum) for _datum in combined_results
+                    ]
+
+                    df = pd.json_normalize(flattened_data).fillna("").astype(str)
+
+                    normalized_data = df.to_dict(orient="records")
+
+                    self.data_fetched.emit(normalized_data)
                 else:
                     self.no_data.emit("No Data Available for selected Form")
             else:  # Handle unpaginated requests
@@ -173,7 +205,14 @@ class OnaRequestThread(QThread):
                 )
                 data = res.json()
                 if data:
-                    self.data_fetched.emit(data)
+                    # flattten data
+                    flattened_data = [flatten_dict(_datum) for _datum in data]
+
+                    df = pd.json_normalize(flattened_data).fillna("").astype(str)
+
+                    normalized_data = df.to_dict(orient="records")
+
+                    self.data_fetched.emit(normalized_data)
                 else:
                     self.no_data.emit("No Data Available for selected Form")
 
@@ -405,7 +444,7 @@ class FetchOnaGeoFieldsThread(QThread):
             else:
                 self.error_occurred.emit("No versions found")
         else:
-            if response.status_code == 500:
+            if response.status_code in [500, 502]:
                 version_url = f"https://{domain}/api/v1/forms/{form_id}/form.json"
                 self.progress_updated.emit(
                     f"Unable to fetch older Form Versions, Falling back to default..."
