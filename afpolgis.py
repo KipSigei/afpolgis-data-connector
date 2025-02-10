@@ -957,8 +957,9 @@ class AfpolGIS(QObject):
         self.dlg.comboDhisIndicators.clear()
         indicators_data = self.dlg.comboDhisIndicatorGroups.currentData()
         if indicators_data:
-            if isinstance(indicators_data, list):
-                for indicator in indicators_data:
+            indicators = indicators_data.get("indicators")
+            if indicators and isinstance(indicators, list):
+                for indicator in indicators:
                     indicator_name = indicator.get("name")
                     indicator_id = indicator.get("id")
                     self.dlg.comboDhisIndicators.addItem(indicator_name, indicator_id)
