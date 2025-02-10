@@ -778,9 +778,13 @@ class AfpolGIS(QObject):
 
                 # handle progress
                 pager = data.get("pager")
-                total_pages = (pager.get("total") + pager.get("pageSize") - 1) // pager.get("pageSize")
+                total_pages = (
+                    pager.get("total") + pager.get("pageSize") - 1
+                ) // pager.get("pageSize")
                 progress = (
-                    (int(page) / int(total_pages)) * 100 if int(total_pages) > 1 else 100
+                    (int(page) / int(total_pages)) * 100
+                    if int(total_pages) > 1
+                    else 100
                 )
                 self.dlg.dhisProgressBar.setValue(math.ceil(progress) * 2)
                 self.dlg.dhisProgressBar.repaint()
@@ -844,9 +848,7 @@ class AfpolGIS(QObject):
                 feature_collection, "dhis", f"level_{cleaned_adm_lvl}"
             )
         else:
-            self.dlg.app_logs.appendPlainText(
-                "No Available Geometry to Display"
-            )
+            self.dlg.app_logs.appendPlainText("No Available Geometry to Display")
             self.iface.messageBar().pushMessage(
                 "Notice",
                 f"No Available Geometry to Display",
@@ -892,9 +894,7 @@ class AfpolGIS(QObject):
                 page += 1
                 max_pages = 100
 
-                progress = (
-                    (int(page) / max_pages) * 100 if int(max_pages) > 1 else 100
-                )
+                progress = (int(page) / max_pages) * 100 if int(max_pages) > 1 else 100
                 self.dlg.gtsProgressBar.setValue(math.ceil(progress))
                 self.dlg.gtsProgressBar.repaint()
 
@@ -950,7 +950,9 @@ class AfpolGIS(QObject):
             ):
                 self.dlg.gtsProgressBar.setValue(100)
                 self.load_data_to_qgis(
-                    feature_collection, f"gts_{cleaned_field_act_text}", "_".join(single_round_name.split(" "))
+                    feature_collection,
+                    f"gts_{cleaned_field_act_text}",
+                    "_".join(single_round_name.split(" ")),
                 )
                 self.dlg.gtsProgressBar.setValue(0)
             else:
@@ -1531,8 +1533,10 @@ class AfpolGIS(QObject):
             "features": [],
         }
 
-        if topography_param == 'sites':
-            countries_url = f"https://{api_url}/api/{es_api_version}-prod/admin/countries"
+        if topography_param == "sites":
+            countries_url = (
+                f"https://{api_url}/api/{es_api_version}-prod/admin/countries"
+            )
             self.dlg.esProgressBar.setValue(20)
             response = self.fetch_with_retries(countries_url)
             if response.status_code == 200:
@@ -1540,17 +1544,21 @@ class AfpolGIS(QObject):
                 if data:
                     features = data.get("features")
                     if features:
-                        site_admin_tokens = [f.get("properties").get("token") for f in features]
+                        site_admin_tokens = [
+                            f.get("properties").get("token") for f in features
+                        ]
                         tokens_str = ",".join(site_admin_tokens)
                         params["export"] = "geojson"
                         params["admin"] = tokens_str
-                        export_url = f"https://{api_url}/api/{es_api_version}-prod/sites"
+                        export_url = (
+                            f"https://{api_url}/api/{es_api_version}-prod/sites"
+                        )
                     else:
                         self.iface.messageBar().pushMessage(
                             "Notice",
                             "No Available Features",
                             level=Qgis.Warning,
-                            duration=10
+                            duration=10,
                         )
             else:
                 self.dlg.esProgressBar.setValue(0)
@@ -1559,10 +1567,10 @@ class AfpolGIS(QObject):
                     "Error",
                     f"Error fetching data: {response.status_code}",
                     level=Qgis.Critical,
-                    duration=10
+                    duration=10,
                 )
 
-        if topography_param == 'labs':
+        if topography_param == "labs":
             labs_url = f"https://{api_url}/api/{es_api_version}-prod/{topography_param}"
             self.dlg.esProgressBar.setValue(20)
             response = self.fetch_with_retries(labs_url)
@@ -1577,10 +1585,7 @@ class AfpolGIS(QObject):
                     export_url = f"https://{api_url}/api/{es_api_version}-prod/labs"
                 else:
                     self.iface.messageBar().pushMessage(
-                        "Notice",
-                        "No Available Data",
-                        level=Qgis.Warning,
-                        duration=10
+                        "Notice", "No Available Data", level=Qgis.Warning, duration=10
                     )
             else:
                 self.dlg.esProgressBar.setValue(0)
@@ -1589,7 +1594,7 @@ class AfpolGIS(QObject):
                     "Error",
                     f"Error fetching data: {response.status_code}",
                     level=Qgis.Critical,
-                    duration=10
+                    duration=10,
                 )
 
         if export_url:
@@ -1598,18 +1603,17 @@ class AfpolGIS(QObject):
             if site_admin_tokens:
                 quater = len(site_admin_tokens) // 4  # Find the midpoint
                 first = site_admin_tokens[:quater]
-                second = site_admin_tokens[quater: 2 * quater]
-                third = site_admin_tokens[2 * quater: 3 * quater]
-                fourth = site_admin_tokens[3 * quater:]
+                second = site_admin_tokens[quater : 2 * quater]
+                third = site_admin_tokens[2 * quater : 3 * quater]
+                fourth = site_admin_tokens[3 * quater :]
 
                 for admin_tokens in [first, second, third, fourth]:
                     token_str = ",".join(admin_tokens)
 
-                    response = self.fetch_with_retries(export_url, params={
-                        "export": "geojson",
-                        "admin": token_str
-                    })
-    
+                    response = self.fetch_with_retries(
+                        export_url, params={"export": "geojson", "admin": token_str}
+                    )
+
                     if response.status_code == 200:
                         data = response.json()
                         if data:
@@ -1622,7 +1626,7 @@ class AfpolGIS(QObject):
                             "Error",
                             f"Error fetching data: {response.status_code}",
                             level=Qgis.Critical,
-                        ) 
+                        )
 
                 self.dlg.esProgressBar.setValue(100)
 
@@ -1630,7 +1634,9 @@ class AfpolGIS(QObject):
                     sites_feature_collection["features"]
                     and len(sites_feature_collection["features"]) > 0
                 ):
-                    self.load_data_to_qgis(sites_feature_collection, "es", topography_param)
+                    self.load_data_to_qgis(
+                        sites_feature_collection, "es", topography_param
+                    )
                     self.dlg.esProgressBar.setValue(0)
                     self.dlg.esOkButton.setEnabled(True)
                 else:
@@ -1650,7 +1656,9 @@ class AfpolGIS(QObject):
                         feature_collection["features"]
                         and len(feature_collection["features"]) > 0
                     ):
-                        self.load_data_to_qgis(feature_collection, "es", topography_param)
+                        self.load_data_to_qgis(
+                            feature_collection, "es", topography_param
+                        )
                         self.dlg.esProgressBar.setValue(0)
                         self.dlg.esOkButton.setEnabled(True)
                     else:
