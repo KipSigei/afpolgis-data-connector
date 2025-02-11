@@ -100,6 +100,11 @@ class AfpolGIS(QObject):
             ["Level 1", "Level 2", "Level 3", "Level 4", "Level 5"]
         )
 
+        self.dlg.ComboDhisCategory.addItems([
+            "Programs",
+            "DataSets"
+        ])
+
         self.dlg.comboDhisPeriod.addItems(
             [
                 "TODAY",
@@ -202,8 +207,12 @@ class AfpolGIS(QObject):
         self.dlg.btnFetchGTSTables.clicked.connect(self.fetch_gts_indicators_handler)
 
         # Connect the "Connect" button in the DHIS Tab to the corresponding fetch handler
-        self.dlg.btnFetchDhisIndicatorGrps.clicked.connect(
-            self.fetch_dhis_indicator_groups_handler
+        self.dlg.btnFetchDhisCategory.clicked.connect(
+            self.fetch_dhis_selected_category_handler
+        )
+
+        self.dlg.ComboDhisCategory.currentIndexChanged.connect(
+            self.fetch_dhis_selected_category_handler
         )
 
         # Connect the "OK" button in the DHIS tab to the corresponding handler
@@ -273,7 +282,7 @@ class AfpolGIS(QObject):
         # )
 
         # DHIS Indicator groups on change
-        self.dlg.comboDhisIndicatorGroups.currentIndexChanged.connect(
+        self.dlg.comboDhisProgramsOrDataSets.currentIndexChanged.connect(
             self.dhis_indicator_groups_on_change
         )
 
@@ -750,12 +759,12 @@ class AfpolGIS(QObject):
         self.dlg.comboDhisDataSets.clear()
         self.dlg.comboDhisIndicators.clear()
 
-        self.dlg.btnFetchDhisIndicatorGrps.setEnabled(False)
+        self.dlg.btnFetchDhisCategory.setEnabled(False)
         self.dlg.dhisOkButton.setEnabled(False)
         self.dlg.dhisOkButton.repaint()
 
-        self.dlg.btnFetchDhisIndicatorGrps.setText("Connecting...")
-        self.dlg.btnFetchDhisIndicatorGrps.repaint()
+        self.dlg.btnFetchDhisCategory.setText("Connecting...")
+        self.dlg.btnFetchDhisCategory.repaint()
 
         page = 1
 
@@ -826,17 +835,17 @@ class AfpolGIS(QObject):
                 elif not pager.get("nextPage"):
                     hasData = False
                     self.dlg.dhisProgressBar.setValue(0)
-                    self.dlg.btnFetchDhisIndicatorGrps.setEnabled(True)
-                    self.dlg.btnFetchDhisIndicatorGrps.setText("Connect")
-                    self.dlg.btnFetchDhisIndicatorGrps.repaint()
+                    self.dlg.btnFetchDhisCategory.setEnabled(True)
+                    self.dlg.btnFetchDhisCategory.setText("Connect")
+                    self.dlg.btnFetchDhisCategory.repaint()
                 else:
                     self.dlg.dhisProgressBar.setValue(0)
                     self.iface.messageBar().pushMessage(
                         "Notice", "No Data Found", level=Qgis.Warning
                     )
-                    self.dlg.btnFetchDhisIndicatorGrps.setEnabled(True)
-                    self.dlg.btnFetchDhisIndicatorGrps.setText("Connect")
-                    self.dlg.btnFetchDhisIndicatorGrps.repaint()
+                    self.dlg.btnFetchDhisCategory.setEnabled(True)
+                    self.dlg.btnFetchDhisCategory.setText("Connect")
+                    self.dlg.btnFetchDhisCategory.repaint()
                     break
             else:
                 self.dlg.dhisProgressBar.setValue(0)
@@ -845,9 +854,9 @@ class AfpolGIS(QObject):
                     f"Error fetching data: {response.status_code}",
                     level=Qgis.Critical,
                 )
-                self.dlg.btnFetchDhisIndicatorGrps.setEnabled(True)
-                self.dlg.btnFetchDhisIndicatorGrps.setText("Connect")
-                self.dlg.btnFetchDhisIndicatorGrps.repaint()
+                self.dlg.btnFetchDhisCategory.setEnabled(True)
+                self.dlg.btnFetchDhisCategory.setText("Connect")
+                self.dlg.btnFetchDhisCategory.repaint()
                 break
 
             page += 1
@@ -866,29 +875,40 @@ class AfpolGIS(QObject):
             )
             self.dlg.dhisOkButton.setEnabled(True)
 
-    def fetch_dhis_indicator_groups_handler(self):
+    def fetch_dhis_selected_category_handler(self):
         api_url = self.dlg.dhis_api_url.text()
         username = self.dlg.dhis_username.text()
         password = self.dlg.dhisMLineEdit.text()
-        self.fetch_dhis_indicator_groups(api_url, username, password)
+        self.fetch_dhis_selected_category(api_url, username, password)
 
-    def fetch_dhis_indicator_groups(self, api_url, username, password):
+    def fetch_dhis_selected_category(self, api_url, username, password):
         auth = HTTPBasicAuth(username, password)
-        self.dlg.comboDhisIndicatorGroups.clear()
+        self.dlg.comboDhisProgramsOrDataSets.clear()
         self.dlg.comboDhisIndicators.clear()
 
-        self.dlg.btnFetchDhisIndicatorGrps.setEnabled(False)
+        category_text = self.dlg.ComboDhisCategory.currentText()
+        indicator_text = None
+
+        # extract datasets or programs text
+        if category_text.lower().strip() == 'datasets':
+            category_text = "dataSets"
+            indicator_text = 'indicators'
+        elif category_text.lower().strip() == 'programs':
+            category_text = 'programs'
+            indicator_text = 'programIndicators'
+
+        self.dlg.btnFetchDhisCategory.setEnabled(False)
         self.dlg.dhisOkButton.setEnabled(False)
         self.dlg.dhisOkButton.repaint()
 
         page = 1
 
-        url = f"https://{api_url}/api/indicatorGroups"
+        url = f"https://{api_url}/api/{category_text}"
         hasData = True
 
         while hasData:
             params = [
-                ("fields", "id,name,indicators[id,name]"),
+                ("fields", f"id,name,{indicator_text}[id,name]"),
                 ("page", page),
                 ("pageSize", 1000),
             ]
@@ -897,7 +917,7 @@ class AfpolGIS(QObject):
 
             if response.status_code == 200:
                 data = response.json()
-                result = data.get("indicatorGroups")
+                result = data.get(category_text)
 
                 pager = data.get("pager")
                 total_pages = (
@@ -908,28 +928,29 @@ class AfpolGIS(QObject):
                     if int(total_pages) > 1
                     else 100
                 )
-                self.dlg.dhisProgressBar.setValue(math.ceil(progress) * 2)
+                self.dlg.dhisProgressBar.setValue(math.ceil(progress))
                 self.dlg.dhisProgressBar.repaint()
 
                 if result:
                     for datum in result:
-                        indicator_group_name = datum.get("name")
-                        indicator_group_id = datum.get("id")
-                        indicators = datum.get("indicators")
+                        category_name = datum.get("name")
+                        category_id = datum.get("id")
+                        curr_indicators = datum.get(indicator_text)
 
-                        self.dlg.comboDhisIndicatorGroups.addItem(
-                            indicator_group_name,
+                        self.dlg.comboDhisProgramsOrDataSets.addItem(
+                            category_name,
                             {
-                                "indicator_group_id": indicator_group_id,
-                                "indicators": indicators,
-                            },
+                                "category_id": category_id,
+                                 "curr_indicators": curr_indicators
+                            }
                         )
+
                 elif not pager.get("nextPage"):
                     hasData = False
                     self.dlg.dhisProgressBar.setValue(0)
-                    self.dlg.btnFetchDhisIndicatorGrps.setEnabled(True)
-                    self.dlg.btnFetchDhisIndicatorGrps.setText("Connect")
-                    self.dlg.btnFetchDhisIndicatorGrps.repaint()
+                    self.dlg.btnFetchDhisCategory.setEnabled(True)
+                    self.dlg.btnFetchDhisCategory.setText("Connect")
+                    self.dlg.btnFetchDhisCategory.repaint()
 
                 else:
                     hasData = False
@@ -937,27 +958,28 @@ class AfpolGIS(QObject):
                     self.iface.messageBar().pushMessage(
                         "Notice", "No Data Found", level=Qgis.Warning
                     )
-                    self.dlg.btnFetchDhisIndicatorGrps.setEnabled(True)
-                    self.dlg.btnFetchDhisIndicatorGrps.setText("Connect")
-                    self.dlg.btnFetchDhisIndicatorGrps.repaint()
+                    self.dlg.btnFetchDhisCategory.setEnabled(True)
+                    self.dlg.btnFetchDhisCategory.setText("Connect")
+                    self.dlg.btnFetchDhisCategory.repaint()
             else:
+                hasData = False
                 self.dlg.dhisProgressBar.setValue(0)
                 self.iface.messageBar().pushMessage(
                     "Error",
                     f"Error fetching data: {response.status_code}",
                     level=Qgis.Critical,
                 )
-                self.dlg.btnFetchDhisIndicatorGrps.setEnabled(True)
-                self.dlg.btnFetchDhisIndicatorGrps.setText("Connect")
-                self.dlg.btnFetchDhisIndicatorGrps.repaint()
+                self.dlg.btnFetchDhisCategory.setEnabled(True)
+                self.dlg.btnFetchDhisCategory.setText("Connect")
+                self.dlg.btnFetchDhisCategory.repaint()
 
             page += 1
 
     def dhis_indicator_groups_on_change(self):
         self.dlg.comboDhisIndicators.clear()
-        indicators_data = self.dlg.comboDhisIndicatorGroups.currentData()
+        indicators_data = self.dlg.comboDhisProgramsOrDataSets.currentData()
         if indicators_data:
-            indicators = indicators_data.get("indicators")
+            indicators = indicators_data.get("curr_indicators")
             if indicators and isinstance(indicators, list):
                 for indicator in indicators:
                     indicator_name = indicator.get("name")
