@@ -688,7 +688,7 @@ class AfpolGIS(QObject):
                             else:
                                 cleaned_data[row[1]]["Value"] += float(row[3])
                                 cleaned_data[row[1]]["Period"] = (
-                                    cleaned_data[row[1]]["Period"] + "," + row[2]
+                                    cleaned_data[row[1]]["Period"] + "," + meta_items.get(row[2]).get("name"),
                                 )
 
                         # get single geometry
@@ -731,7 +731,7 @@ class AfpolGIS(QObject):
                                 self.load_data_to_qgis(
                                     feature_collection,
                                     cleaned_indicator_text,
-                                    selected_period,
+                                    f"LEVEL_{cleaned_adm_lvl}_{selected_period}",
                                 )
                             else:
                                 self.dlg.app_logs.appendPlainText(
