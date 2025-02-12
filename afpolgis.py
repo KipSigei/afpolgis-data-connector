@@ -100,10 +100,7 @@ class AfpolGIS(QObject):
             ["Level 1", "Level 2", "Level 3", "Level 4", "Level 5"]
         )
 
-        self.dlg.ComboDhisCategory.addItems([
-            "Programs",
-            "DataSets"
-        ])
+        self.dlg.ComboDhisCategory.addItems(["Programs", "DataSets"])
 
         self.dlg.comboDhisPeriod.addItems(
             [
@@ -623,22 +620,41 @@ class AfpolGIS(QObject):
         password = self.dlg.dhisMLineEdit.text()
         auth = HTTPBasicAuth(username, password)
 
-        selected_org_unit = self.dlg.comboDhisOrgUnits.currentData()
         selected_period = self.dlg.comboDhisPeriod.currentText()
-        indicator_data = self.dlg.comboDhisIndicators.currentData()
+        curr_indicator_id = self.dlg.comboDhisIndicators.currentData()
+        curr_indicator_text = self.dlg.comboDhisIndicators.currentText()
         adm_level = self.dlg.ComboDhisAdminLevels.currentText()
         cleaned_adm_lvl = adm_level.split(" ")[-1]
 
-        curr_org_unit_id = None
-        curr_indicator_id = None
+        geo_data = None
 
-        if selected_org_unit:
-            curr_org_unit_id = selected_org_unit.get("id")
+        # Fetch GeoJSON for active level
+        feature_collection = {
+            "type": "FeatureCollection",
+            "features": [],
+        }
 
-        if indicator_data:
-            curr_indicator_id = indicator_data.get("indicator_id")
+        geo_url = f"https://{api_url}/api/geoFeatures"
+        geo_params = [
+            ("ou", f"ou:LEVEL-{cleaned_adm_lvl}"),
+            ("displayProperty", "NAME"),
+        ]
 
-        if curr_org_unit_id and curr_indicator_id:
+        geo_response = self.fetch_with_retries(geo_url, auth, geo_params)
+
+        if geo_response.status_code == 200:
+            geo_data = geo_response.json()
+        else:
+            self.iface.messageBar().pushMessage(
+                "Error",
+                f"Error fetching Geometry: {geo_response.status_code}",
+                level=Qgis.Critical,
+                duration=10,
+            )
+            self.dlg.dhisOkButton.setEnabled(True)
+            self.dlg.dhisProgressBar.setValue(0)
+
+        if geo_data and curr_indicator_id:
             params = [
                 ("dimension", f"dx:{curr_indicator_id}"),
                 ("dimension", f"ou:LEVEL-{cleaned_adm_lvl}"),
@@ -656,12 +672,81 @@ class AfpolGIS(QObject):
                 if data:
                     self.dlg.dhisProgressBar.setValue(100)
                     rows = data.get("rows")
+                    metadata = data.get("metaData")
+                    meta_items = metadata.get("items")
                     if rows:
-                        self.load_dhis_data_to_qgis(
-                            data, curr_org_unit_id, curr_indicator_id
-                        )
-                        self.dlg.dhisOkButton.setEnabled(True)
-                        self.dlg.dhisProgressBar.setValue(0)
+                        cleaned_data = dict()
+                        for row in rows:
+                            if not cleaned_data.get(row[1]):
+                                cleaned_data[row[1]] = {
+                                    "Org ID": row[1],
+                                    "Org Unit": meta_items.get(row[1]).get("name"),
+                                    "Indicator": meta_items.get(row[0]).get("name"),
+                                    "Period": meta_items.get(row[2]).get("name"),
+                                    "Value": float(row[3]),
+                                }
+                            else:
+                                cleaned_data[row[1]]["Value"] += float(row[3])
+                                cleaned_data[row[1]]["Period"] = (
+                                    cleaned_data[row[1]]["Period"] + "," + row[2]
+                                )
+
+                        # get single geometry
+                        if cleaned_data:
+                            for datum in cleaned_data.values():
+                                single_geom_obj = next(
+                                    (
+                                        geom
+                                        for geom in geo_data
+                                        if geom.get("id") == datum.get("Org ID")
+                                    ),
+                                    None,
+                                )
+                                if single_geom_obj:
+                                    coordinates = json.loads(single_geom_obj.get("co"))
+                                    geom_type = "Polygon"
+                                    if len(coordinates) > 1:
+                                        geom_type = "Point"
+
+                                    geometry = {
+                                        "type": geom_type,
+                                        "coordinates": coordinates,
+                                    }
+
+                                    feature = {
+                                        "type": "Feature",
+                                        "geometry": geometry,
+                                        "properties": datum,
+                                    }
+
+                                    feature_collection["features"].append(feature)
+
+                            if (
+                                feature_collection["features"]
+                                and len(feature_collection["features"]) > 0
+                            ):
+                                cleaned_indicator_text = "_".join(
+                                    curr_indicator_text.split(" ")
+                                )
+                                self.load_data_to_qgis(
+                                    feature_collection,
+                                    cleaned_indicator_text,
+                                    selected_period,
+                                )
+                            else:
+                                self.dlg.app_logs.appendPlainText(
+                                    "No Available Geometry to Display"
+                                )
+                                self.iface.messageBar().pushMessage(
+                                    "Notice",
+                                    f"No Available Geometry to Display",
+                                    level=Qgis.Warning,
+                                    duration=10,
+                                )
+                                self.dlg.dhisOkButton.setEnabled(True)
+
+                            self.dlg.dhisOkButton.setEnabled(True)
+                            self.dlg.dhisProgressBar.setValue(0)
                     else:
                         self.iface.messageBar().pushMessage(
                             "Notice",
@@ -674,12 +759,21 @@ class AfpolGIS(QObject):
             else:
                 self.iface.messageBar().pushMessage(
                     "Error",
-                    f"Error fetching data: {response.status_code}",
+                    f"Error fetching data: {response.reason}",
                     level=Qgis.Critical,
                     duration=10,
                 )
                 self.dlg.dhisOkButton.setEnabled(True)
                 self.dlg.dhisProgressBar.setValue(0)
+        else:
+            self.iface.messageBar().pushMessage(
+                "Notice",
+                f"Indicator Not Set",
+                level=Qgis.Warning,
+                duration=10,
+            )
+            self.dlg.dhisOkButton.setEnabled(True)
+            self.dlg.dhisProgressBar.setValue(0)
 
     def fetch_dhis_org_units_handler(self):
         api_url = self.dlg.dhis_api_url.text()
@@ -890,12 +984,12 @@ class AfpolGIS(QObject):
         indicator_text = None
 
         # extract datasets or programs text
-        if category_text.lower().strip() == 'datasets':
+        if category_text.lower().strip() == "datasets":
             category_text = "dataSets"
-            indicator_text = 'indicators'
-        elif category_text.lower().strip() == 'programs':
-            category_text = 'programs'
-            indicator_text = 'programIndicators'
+            indicator_text = "indicators"
+        elif category_text.lower().strip() == "programs":
+            category_text = "programs"
+            indicator_text = "programIndicators"
 
         self.dlg.btnFetchDhisCategory.setEnabled(False)
         self.dlg.dhisOkButton.setEnabled(False)
@@ -941,8 +1035,8 @@ class AfpolGIS(QObject):
                             category_name,
                             {
                                 "category_id": category_id,
-                                 "curr_indicators": curr_indicators
-                            }
+                                "curr_indicators": curr_indicators,
+                            },
                         )
 
                 elif not pager.get("nextPage"):
@@ -3294,10 +3388,10 @@ class AfpolGIS(QObject):
         features = []
         for row in rows:
             feature = QgsFeature()
-            new_row = self.rename_dhis_row_entries(
-                row, meta_items, curr_org_unit_id, curr_indicator_id
-            )
-            feature.setAttributes(new_row)
+            # new_row = self.rename_dhis_row_entries(
+            #     row, meta_items, curr_org_unit_id, curr_indicator_id
+            # )
+            feature.setAttributes(row)
             features.append(feature)
 
         provider.addFeatures(features)
