@@ -687,9 +687,7 @@ class AfpolGIS(QObject):
                                 }
                             else:
                                 cleaned_data[row[1]]["Value"] += float(row[3])
-                                cleaned_data[row[1]]["Period"] = (
-                                    cleaned_data[row[1]]["Period"] + "," + meta_items.get(row[2]).get("name"),
-                                )
+                                cleaned_data[row[1]]["Period"] = cleaned_data[row[1]]["Period"] + "," + meta_items.get(row[2]).get("name")
 
                         # get single geometry
                         if cleaned_data:
