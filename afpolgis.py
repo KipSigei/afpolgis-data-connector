@@ -687,7 +687,11 @@ class AfpolGIS(QObject):
                                 }
                             else:
                                 cleaned_data[row[1]]["Value"] += float(row[3])
-                                cleaned_data[row[1]]["Period"] = cleaned_data[row[1]]["Period"] + "," + meta_items.get(row[2]).get("name")
+                                cleaned_data[row[1]]["Period"] = (
+                                    cleaned_data[row[1]]["Period"]
+                                    + ","
+                                    + meta_items.get(row[2]).get("name")
+                                )
 
                         # get single geometry
                         if cleaned_data:
@@ -757,7 +761,7 @@ class AfpolGIS(QObject):
             else:
                 self.iface.messageBar().pushMessage(
                     "Error",
-                    f"Error fetching data: {response.reason}",
+                    f"Error fetching data: {response.status_code}",
                     level=Qgis.Critical,
                     duration=10,
                 )
