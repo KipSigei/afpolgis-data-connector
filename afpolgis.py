@@ -263,6 +263,10 @@ class AfpolGIS(QObject):
         # Connect ES topography dropdown on change
         self.dlg.esOkButton.clicked.connect(self.fetch_es_data_clicked)
 
+        self.dlg.combESTopology.currentIndexChanged.connect(
+            self.on_es_combo_topography_change
+        )
+
         # Connect GTS table names dropdown on change
         self.dlg.comboGTSTableTypes.currentIndexChanged.connect(
             self.on_gts_tables_combo_box_change
@@ -612,11 +616,11 @@ class AfpolGIS(QObject):
             # Write to CSV
             with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
                 headers = data[0].keys()
-                writer = csv.DictWriter(csvfile, fieldnames=headers)
-                writer.writeheader()
+                writer = csv.writer(csvfile)
+                writer.writerow(headers)
 
                 for row in data:
-                    writer.writerow(row)
+                    writer.writerow(row.values())
 
             QgsMessageLog.logMessage(
                 f"CSV successfully saved to {output_file}", "CSV Download"
@@ -1851,6 +1855,9 @@ class AfpolGIS(QObject):
 
         return dict(items)
 
+    def on_es_combo_topography_change(self):
+        self.es_reset_saved_data()
+
     def fetch_es_data_clicked(self):
         api_url = self.dlg.es_api_url.text()
         es_api_version = self.dlg.esAPIVersion.text()
@@ -1970,6 +1977,12 @@ class AfpolGIS(QObject):
                     sites_feature_collection["features"]
                     and len(sites_feature_collection["features"]) > 0
                 ):
+                    self.es_json_data = [
+                        feature.get("properties")
+                        for feature in sites_feature_collection["features"]
+                    ]
+                    self.dlg.esDownloadCSV.setEnabled(True)
+
                     self.load_data_to_qgis(
                         sites_feature_collection, "es", topography_param
                     )
@@ -1992,6 +2005,12 @@ class AfpolGIS(QObject):
                         feature_collection["features"]
                         and len(feature_collection["features"]) > 0
                     ):
+                        self.es_json_data = [
+                            feature.get("properties")
+                            for feature in feature_collection["features"]
+                        ]
+                        self.dlg.esDownloadCSV.setEnabled(True)
+
                         self.load_data_to_qgis(
                             feature_collection, "es", topography_param
                         )
@@ -2021,6 +2040,21 @@ class AfpolGIS(QObject):
         self.kobo_json_data = list()
         self.dlg.koboDownloadCSV.setEnabled(False)
         self.dlg.koboDownloadCSV.repaint()
+
+    def gts_reset_saved_data(self):
+        self.gts_json_data = list()
+        self.dlg.gtsDownloadCSV.setEnabled(False)
+        self.dlg.gtsDownloadCSV.repaint()
+
+    def es_reset_saved_data(self):
+        self.es_json_data = list()
+        self.dlg.esDownloadCSV.setEnabled(False)
+        self.dlg.esDownloadCSV.repaint()
+
+    def dhis_reset_saved_data(self):
+        self.dhis_json_data = list()
+        self.dlg.dhisDownloadCSV.setEnabled(False)
+        self.dlg.dhisDownloadCSV.repaint()
 
     def on_odk_forms_combo_box_change(self):
 
