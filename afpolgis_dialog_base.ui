@@ -16,6 +16,12 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>876</width>
+    <height>775</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>AfpolGIS Data Connector</string>
   </property>
@@ -38,6 +44,12 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
    <property name="font">
     <font>
      <kerning>true</kerning>
@@ -47,7 +59,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>5</number>
+    <number>1</number>
    </property>
    <property name="usesScrollButtons">
     <bool>true</bool>
@@ -98,7 +110,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="buttonLayout" stretch="0,0">
+       <layout class="QHBoxLayout" name="buttonLayout" stretch="0,0,0">
         <item>
          <widget class="QPushButton" name="onaCancelButton">
           <property name="text">
@@ -109,7 +121,14 @@
         <item>
          <widget class="QPushButton" name="onaOkButton">
           <property name="text">
-           <string>OK</string>
+           <string>Load Data To Map</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="onaDownloadCSV">
+          <property name="text">
+           <string>Export CSV</string>
           </property>
          </widget>
         </item>
@@ -580,7 +599,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="buttonLayout_3" stretch="0,0">
+       <layout class="QHBoxLayout" name="buttonLayout_3" stretch="0,0,0">
         <item>
          <widget class="QPushButton" name="odkCancelButton">
           <property name="text">
@@ -591,7 +610,14 @@
         <item>
          <widget class="QPushButton" name="odkOkButton">
           <property name="text">
-           <string>OK</string>
+           <string>Load Data To Map</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="odkDownloadCSV">
+          <property name="text">
+           <string>Export CSV</string>
           </property>
          </widget>
         </item>
@@ -827,7 +853,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="buttonLayout_4" stretch="0,0">
+       <layout class="QHBoxLayout" name="buttonLayout_4" stretch="0,0,0">
         <item>
          <widget class="QPushButton" name="koboCancelButton">
           <property name="text">
@@ -838,7 +864,14 @@
         <item>
          <widget class="QPushButton" name="koboOkButton">
           <property name="text">
-           <string>OK</string>
+           <string>Load Data To Map</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="koboDownloadCSV">
+          <property name="text">
+           <string>Export CSV</string>
           </property>
          </widget>
         </item>
@@ -984,7 +1017,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="buttonLayout_6" stretch="0,0">
+       <layout class="QHBoxLayout" name="buttonLayout_6" stretch="0,0,0">
         <item>
          <widget class="QPushButton" name="gtsCancelButton">
           <property name="text">
@@ -995,7 +1028,14 @@
         <item>
          <widget class="QPushButton" name="gtsOkButton">
           <property name="text">
-           <string>OK</string>
+           <string>Load Data To Map</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="gtsDownloadCSV">
+          <property name="text">
+           <string>Export CSV</string>
           </property>
          </widget>
         </item>
@@ -1077,7 +1117,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="buttonLayout_7" stretch="0,0">
+       <layout class="QHBoxLayout" name="buttonLayout_7" stretch="0,0,0">
         <item>
          <widget class="QPushButton" name="esCancelButton">
           <property name="text">
@@ -1088,7 +1128,14 @@
         <item>
          <widget class="QPushButton" name="esOkButton">
           <property name="text">
-           <string>OK</string>
+           <string>Load Data To Map</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="esDownloadCSV">
+          <property name="text">
+           <string>Export CSV</string>
           </property>
          </widget>
         </item>
@@ -1254,7 +1301,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="buttonLayout_5" stretch="0,0">
+       <layout class="QHBoxLayout" name="buttonLayout_5" stretch="0,0,0">
         <item>
          <widget class="QPushButton" name="dhisCancelButton">
           <property name="text">
@@ -1265,7 +1312,14 @@
         <item>
          <widget class="QPushButton" name="dhisOkButton">
           <property name="text">
-           <string>OK</string>
+           <string>Load Data To Map</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="dhisDownloadCSV">
+          <property name="text">
+           <string>Export CSV</string>
           </property>
          </widget>
         </item>
