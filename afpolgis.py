@@ -29,6 +29,7 @@ import os
 import time
 import re
 import requests
+import csv
 from requests.auth import HTTPBasicAuth
 
 from PyQt5 import *
@@ -40,6 +41,7 @@ from qgis.core import (
     QgsFeature,
     QgsGeometry,
     QgsField,
+    QgsMessageLog,
 )
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -80,7 +82,15 @@ class AfpolGIS(QObject):
         self.toolbar = self.iface.addToolBar("AfpolGIS")
         self.toolbar.setObjectName("AfpolGIS")
         self.features = []
-        self.json_data = []
+
+        # Json data var
+        self.json_data = list()
+        self.odk_json_data = list()
+        self.kobo_json_data = list()
+        self.gts_json_data = list()
+        self.es_json_data = list()
+        self.dhis_json_data = list()
+
         self.new_features = []
         self.form_versions = None
         self.current_form_version = None
@@ -298,6 +308,35 @@ class AfpolGIS(QObject):
         self.dlg.koboOkButton.setEnabled(False)
         self.dlg.gtsOkButton.setEnabled(False)
         self.dlg.dhisOkButton.setEnabled(False)
+
+        # CSV Export functionality
+        self.dlg.onaDownloadCSV.setEnabled(False)
+        self.dlg.odkDownloadCSV.setEnabled(False)
+        self.dlg.koboDownloadCSV.setEnabled(False)
+
+        self.dlg.gtsDownloadCSV.setEnabled(False)
+        self.dlg.esDownloadCSV.setEnabled(False)
+        self.dlg.dhisDownloadCSV.setEnabled(False)
+
+        self.dlg.onaDownloadCSV.clicked.connect(
+            lambda: self.download_csv(self.json_data)
+        )
+        self.dlg.odkDownloadCSV.clicked.connect(
+            lambda: self.download_csv(self.odk_json_data)
+        )
+        self.dlg.koboDownloadCSV.clicked.connect(
+            lambda: self.download_csv(self.kobo_json_data)
+        )
+
+        self.dlg.gtsDownloadCSV.clicked.connect(
+            lambda: self.download_csv(self.gts_json_data)
+        )
+        self.dlg.esDownloadCSV.clicked.connect(
+            lambda: self.download_csv(self.es_json_data)
+        )
+        self.dlg.dhisDownloadCSV.clicked.connect(
+            lambda: self.download_csv(self.dhis_json_data)
+        )
 
         # password visibility
         self.showPassword = False
@@ -557,6 +596,33 @@ class AfpolGIS(QObject):
         self.thread_pool.start(self.worker)
         self.dlg.app_logs.appendPlainText(f"Done")
 
+    def download_csv(self, data):
+        if data:
+            # Open file dialog to select save location
+            output_file, _ = QFileDialog.getSaveFileName(
+                None, "Save CSV File", "", "CSV Files (*.csv)"
+            )
+            if not output_file:
+                QMessageBox.warning(None, "Cancelled", "No file selected.")
+                return
+
+            if not output_file.endswith(".csv"):
+                output_file += ".csv"
+
+            # Write to CSV
+            with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
+                headers = data[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=headers)
+                writer.writeheader()
+
+                for row in data:
+                    writer.writerow(row)
+
+            QgsMessageLog.logMessage(
+                f"CSV successfully saved to {output_file}", "CSV Download"
+            )
+            QMessageBox.information(None, "Success", f"CSV File saved to {output_file}")
+
     def providers_map(self):
         return {
             "Onadata": "api.whonghub.org",
@@ -589,10 +655,14 @@ class AfpolGIS(QObject):
     def on_from_date_changed(self, value):
         date_str = value.toString("yyyy-MM-dd")
         self.from_date = date_str
+        self.dlg.onaDownloadCSV.setEnabled(False)
+        self.dlg.onaDownloadCSV.repaint()
 
     def on_to_date_changed(self, value):
         date_str = value.toString("yyyy-MM-dd")
         self.to_date = date_str
+        self.dlg.onaDownloadCSV.setEnabled(False)
+        self.dlg.onaDownloadCSV.repaint()
 
     def cancel_button_clicked(self):
         self.reset_inputs()
@@ -1392,6 +1462,14 @@ class AfpolGIS(QObject):
         api_url = self.dlg.kobo_api_url.text()
         selected_form = self.dlg.comboKoboForms.currentData()
 
+        # disable OK button
+        self.dlg.koboOkButton.setEnabled(False)
+        self.dlg.koboPorgressBar.setValue(0)
+        self.dlg.koboOkButton.repaint()
+
+        # reset saved data
+        self.kobo_reset_saved_data()
+
         asset_id = None
         if selected_form:
             asset_id = selected_form.get("asset_uid")
@@ -1523,7 +1601,11 @@ class AfpolGIS(QObject):
                 if data_list:
                     self.dlg.koboPorgressBar.setValue(100)
                     for datum in data_list:
-                        self.get_geo_data(datum, geo_field, feature_collection)
+                        flattened_datum = self.flatten_dict(datum)
+                        self.kobo_json_data.append(flattened_datum)
+                        self.get_geo_data(
+                            flattened_datum, geo_field, feature_collection
+                        )
 
                 elif not data.get("next"):
                     hasData = False
@@ -1546,6 +1628,10 @@ class AfpolGIS(QObject):
 
         # count = len(feature_collection["features"])
         # self.dlg.app_logs.appendPlainText(f"Features count: {count}")
+
+        if self.kobo_json_data:
+            self.dlg.koboDownloadCSV.setEnabled(True)
+            self.dlg.koboDownloadCSV.repaint()
 
         if feature_collection["features"] and len(feature_collection["features"]) > 0:
             cleaned_asset_name = "".join(asset_name.split(" "))
@@ -1642,6 +1728,15 @@ class AfpolGIS(QObject):
             if geo_fields:
                 self.dlg.comboKoboGeoFields.addItems(geo_fields)
                 self.dlg.comboKoboGeoFields.setEnabled(True)
+                self.dlg.comboKoboForms.setEnabled(True)
+            else:
+                self.dlg.comboKoboForms.setEnabled(True)
+                self.iface.messageBar().pushMessage(
+                    "Notice",
+                    "No Geo Fields Present on Selected Form",
+                    level=Qgis.Warning,
+                    duration=10,
+                )
         else:
             self.iface.messageBar().pushMessage(
                 "Error",
@@ -1654,6 +1749,22 @@ class AfpolGIS(QObject):
         username = self.dlg.kobo_username.text()
         password = self.dlg.koboMLineEdit.text()
         selected_form = self.dlg.comboKoboForms.currentData()
+
+        self.dlg.comboKoboForms.setEnabled(False)
+        self.dlg.koboOkButton.setEnabled(False)
+        self.dlg.koboDownloadCSV.setEnabled(False)
+        self.dlg.koboDownloadCSV.repaint()
+        self.dlg.comboKoboForms.repaint()
+        self.dlg.koboOkButton.repaint()
+
+        self.dlg.comboKoboGeoFields.clear()
+
+        self.dlg.comboKoboGeoFields.setEnabled(False)
+        self.dlg.comboKoboGeoFields.repaint()
+        self.dlg.app_logs.clear()
+
+        # reset saved data
+        self.kobo_reset_saved_data()
 
         if selected_form:
             asset_id = selected_form.get("asset_uid")
@@ -1901,8 +2012,35 @@ class AfpolGIS(QObject):
                         level=Qgis.Critical,
                     )
 
+    def odk_reset_saved_data(self):
+        self.odk_json_data = list()
+        self.dlg.odkDownloadCSV.setEnabled(False)
+        self.dlg.odkDownloadCSV.repaint()
+
+    def kobo_reset_saved_data(self):
+        self.kobo_json_data = list()
+        self.dlg.koboDownloadCSV.setEnabled(False)
+        self.dlg.koboDownloadCSV.repaint()
+
     def on_odk_forms_combo_box_change(self):
+
+        self.dlg.comboODKForms.setEnabled(False)
+        self.dlg.odkOkButton.setEnabled(False)
+        self.dlg.odkDownloadCSV.setEnabled(False)
+        self.dlg.odkDownloadCSV.repaint()
+        self.dlg.comboODKForms.repaint()
+        self.dlg.odkOkButton.repaint()
+
+        self.dlg.comboODKGeoFields.clear()
+
+        self.dlg.comboODKGeoFields.setEnabled(False)
+        self.dlg.comboODKGeoFields.repaint()
+        self.dlg.app_logs.clear()
+
         form_data = self.dlg.comboODKForms.currentData()
+
+        # reset saved data
+        self.odk_reset_saved_data()
 
         if form_data:
             form_id_str = form_data.get("form_id")
@@ -1996,6 +2134,15 @@ class AfpolGIS(QObject):
             if geo_fields:
                 self.dlg.comboODKGeoFields.addItems(geo_fields)
                 self.dlg.comboODKGeoFields.setEnabled(True)
+                self.dlg.comboODKForms.setEnabled(True)
+            else:
+                self.dlg.comboODKForms.setEnabled(True)
+                self.iface.messageBar().pushMessage(
+                    "Notice",
+                    "No Geo Fields Present on Selected Form",
+                    level=Qgis.Warning,
+                    duration=10,
+                )
         else:
             self.iface.messageBar().pushMessage(
                 "Error",
@@ -2121,6 +2268,8 @@ class AfpolGIS(QObject):
 
         self.dlg.comboOnaForms.setEnabled(False)
         self.dlg.onaOkButton.setEnabled(False)
+        self.dlg.onaDownloadCSV.setEnabled(False)
+        self.dlg.onaDownloadCSV.repaint()
         self.dlg.comboOnaForms.repaint()
         self.dlg.onaOkButton.repaint()
 
@@ -2303,6 +2452,9 @@ class AfpolGIS(QObject):
         self.dlg.odkOkButton.setEnabled(False)
         self.dlg.odkProgressBar.setValue(0)
         self.dlg.odkOkButton.repaint()
+
+        # reset saved data
+        self.odk_reset_saved_data()
 
         api_url = self.dlg.odk_api_url.text()
         form_data = self.dlg.comboODKForms.currentData()
@@ -2487,7 +2639,7 @@ class AfpolGIS(QObject):
                     _flatten(v, new_key)
             elif isinstance(obj, list):
                 for i, item in enumerate(obj):
-                    _flatten(item, f"{key_prefix}[{i}]")
+                    _flatten(item, f"{key_prefix}[{i + 1}]")
             else:
                 flattened[key_prefix] = obj
 
@@ -2534,6 +2686,7 @@ class AfpolGIS(QObject):
                     self.dlg.odkProgressBar.setValue(100)
                     for datum in data_list:
                         flat_data = self.flatten_odk_json(datum)
+                        self.odk_json_data.append(flat_data)
                         feature = self.get_odk_geo_data(flat_data, geo_field)
                         if feature:
                             feature_collection["features"].append(feature)
@@ -2553,6 +2706,10 @@ class AfpolGIS(QObject):
                 self.dlg.odkOkButton.setEnabled(True)
 
             params["$skip"] += params["$top"]
+
+        if self.odk_json_data:
+            self.dlg.odkDownloadCSV.setEnabled(True)
+            self.dlg.odkDownloadCSV.repaint()
 
         if feature_collection["features"] and len(feature_collection["features"]) > 0:
             self.load_data_to_qgis(feature_collection, form_id_str, geo_field)
@@ -2612,6 +2769,10 @@ class AfpolGIS(QObject):
                 "type": "FeatureCollection",
                 "features": [],
             }
+
+            if data:
+                self.json_data = data
+                self.dlg.onaDownloadCSV.setEnabled(True)
 
             for datum in data:
                 self.get_geo_data(datum, geo_field, feature_collection)
