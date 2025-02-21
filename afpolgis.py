@@ -283,9 +283,13 @@ class AfpolGIS(QObject):
         )
 
         # Connect DHIS Levels action
-        # self.dlg.ComboDhisAdminLevels.currentIndexChanged.connect(
-        #     self.fetch_dhis_org_units_handler
-        # )
+        self.dlg.ComboDhisAdminLevels.currentIndexChanged.connect(
+            self.on_dhis_combo_admin_level_change
+        )
+
+        self.dlg.comboDhisPeriod.currentIndexChanged.connect(
+            self.on_dhis_combo_period_change
+        )
 
         # DHIS Org units on change
         # self.dlg.comboDhisOrgUnits.currentIndexChanged.connect(
@@ -801,6 +805,12 @@ class AfpolGIS(QObject):
                                 feature_collection["features"]
                                 and len(feature_collection["features"]) > 0
                             ):
+                                self.dhis_json_data = [
+                                    feature.get("properties")
+                                    for feature in feature_collection["features"]
+                                ]
+                                self.dlg.dhisDownloadCSV.setEnabled(True)
+
                                 cleaned_indicator_text = "_".join(
                                     curr_indicator_text.split(" ")
                                 )
@@ -858,6 +868,7 @@ class AfpolGIS(QObject):
         self.fetch_dhis_org_units(api_url, username, password)
 
     def on_dhis_indicators_change(self):
+        self.dhis_reset_saved_data()
         indicator_data = self.dlg.comboDhisIndicators.currentData()
         if indicator_data:
             self.dlg.dhisOkButton.setEnabled(True)
@@ -1049,6 +1060,7 @@ class AfpolGIS(QObject):
         api_url = self.dlg.dhis_api_url.text()
         username = self.dlg.dhis_username.text()
         password = self.dlg.dhisMLineEdit.text()
+        self.dhis_reset_saved_data()
         self.fetch_dhis_selected_category(api_url, username, password)
 
     def fetch_dhis_selected_category(self, api_url, username, password):
@@ -1145,7 +1157,14 @@ class AfpolGIS(QObject):
 
             page += 1
 
+    def on_dhis_combo_period_change(self):
+        self.dhis_reset_saved_data()
+
+    def on_dhis_combo_admin_level_change(self):
+        self.dhis_reset_saved_data()
+
     def dhis_indicator_groups_on_change(self):
+        self.dhis_reset_saved_data()
         self.dlg.comboDhisIndicators.clear()
         indicators_data = self.dlg.comboDhisProgramsOrDataSets.currentData()
         if indicators_data:
@@ -1247,6 +1266,12 @@ class AfpolGIS(QObject):
                 feature_collection["features"]
                 and len(feature_collection["features"]) > 0
             ):
+                self.gts_json_data = [
+                    feature.get("properties")
+                    for feature in feature_collection["features"]
+                ]
+                self.dlg.gtsDownloadCSV.setEnabled(True)
+
                 self.dlg.gtsProgressBar.setValue(100)
                 self.load_data_to_qgis(
                     feature_collection,
@@ -1275,10 +1300,12 @@ class AfpolGIS(QObject):
 
     def on_gts_tracking_rounds_on_change(self):
         self.dlg.gtsOkButton.setEnabled(True)
+        self.gts_reset_saved_data()
 
     def on_gts_field_activity_change(self):
         field_activity_data = self.dlg.comboGTSFieldActivities.currentData()
         self.dlg.comboGTSTrackingRounds.clear()
+        self.gts_reset_saved_data()
 
         if field_activity_data:
             for datum in field_activity_data:
@@ -1290,13 +1317,18 @@ class AfpolGIS(QObject):
 
     def fetch_gts_tables_data(self, api_url, username, password, tables_url):
         auth = HTTPBasicAuth(username, password)
+
+        self.dlg.comboGTSTableTypes.setEnabled(False)
+
         gts_field_activities = dict()
         url = f"https://{api_url}/fastapi/odata/v1/{tables_url}"
+        self.dlg.gtsProgressBar.setValue(50)
         response = self.fetch_with_retries(url, auth)
         if response.status_code == 200:
             data = response.json()
             data_list = data.get("value")
             if data_list:
+                self.dlg.gtsProgressBar.setValue(100)
                 for datum in data_list:
                     if tables_url == "track_table_names":
                         table_name = datum.get("table_name")
@@ -1354,6 +1386,7 @@ class AfpolGIS(QObject):
                         elif "targeted" in indicator_level:
                             indicator_level = "ta"
 
+                        field_activity_name = datum.get("field_activity_name")
                         tracking_round_name = datum.get("tracking_round_name")
 
                         if field_activity_name:
@@ -1377,11 +1410,17 @@ class AfpolGIS(QObject):
                     self.dlg.comboGTSFieldActivities.addItem(key, val)
 
                 self.dlg.comboGTSFieldActivities.setEnabled(True)
+                self.dlg.gtsProgressBar.setValue(0)
+                self.dlg.comboGTSTableTypes.setEnabled(True)
             else:
+                self.dlg.comboGTSTableTypes.setEnabled(True)
+                self.dlg.gtsProgressBar.setValue(0)
                 self.iface.messageBar().pushMessage(
                     "Notice", "No Data Found", level=Qgis.Warning
                 )
         else:
+            self.dlg.comboGTSTableTypes.setEnabled(True)
+            self.dlg.gtsProgressBar.setValue(0)
             self.iface.messageBar().pushMessage(
                 "Error",
                 f"Error fetching data: {response.status_code}",
@@ -1396,6 +1435,7 @@ class AfpolGIS(QObject):
 
         # clear table names dropdown
         self.dlg.comboGTSFieldActivities.clear()
+        self.gts_reset_saved_data()
 
         # Fetch data for each GTS Indicator
         self.fetch_gts_tables_data(api_url, username, password, tables_url)
@@ -1404,6 +1444,8 @@ class AfpolGIS(QObject):
         api_url = self.dlg.gts_api_url.text()
         username = self.dlg.gts_username.text()
         password = self.dlg.gtsMLineEdit.text()
+        self.reset_gts_inputs()
+        self.gts_reset_saved_data()
         self.fetch_gts_indicators(api_url, username, password)
 
     def update_gts_ui_components(self, text="Connect"):
@@ -1779,6 +1821,7 @@ class AfpolGIS(QObject):
         api_url = self.dlg.kobo_api_url.text()
         username = self.dlg.kobo_username.text()
         password = self.dlg.koboMLineEdit.text()
+        self.kobo_reset_saved_data()
         self.fetch_kobo_assets(api_url, username, password)
 
     def fetch_kobo_assets(self, api_url, username, password):
@@ -2031,6 +2074,11 @@ class AfpolGIS(QObject):
                         level=Qgis.Critical,
                     )
 
+    def ona_reset_saved_data(self):
+        self.json_data = list()
+        self.dlg.onaDownloadCSV.setEnabled(False)
+        self.dlg.onaDownloadCSV.repaint()
+
     def odk_reset_saved_data(self):
         self.odk_json_data = list()
         self.dlg.odkDownloadCSV.setEnabled(False)
@@ -2194,6 +2242,7 @@ class AfpolGIS(QObject):
         password = self.dlg.onaMLineEdit.text()
         sync = self.dlg.onaSyncInterval.value()
         self.dlg.app_logs.appendPlainText(f"sync interval - {sync}")
+        self.ona_reset_saved_data()
         self.fetch_ona_forms(api_url, username, password)
 
     def handle_ona_forms_data_fetched(self, data):
@@ -2356,6 +2405,7 @@ class AfpolGIS(QObject):
         api_url = self.dlg.odk_api_url.text()
         username = self.dlg.odk_username.text()
         password = self.dlg.odkmLineEdit.text()
+        self.odk_reset_saved_data()
         self.fetch_odk_projects(api_url, username, password)
 
     def fetch_odk_forms_per_proj(self, api_url, username, password, project_ids):
