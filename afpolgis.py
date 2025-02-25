@@ -412,8 +412,8 @@ class AfpolGIS(QObject):
         </ul>
         <h3>Author Information</h3>
         <p>
-            <strong>Developer:</strong> Kipchirchir Cheroigin<br>
-            <strong>Contact:</strong> <a href="mailto:kcheroigin@gmail.com">kcheroigin@gmail.com</a>
+            <strong>Developers:</strong> Kipchirchir Cheroigin and Derrick Demeveng <br>
+            <strong>Contacts:</strong> <a href="mailto:kcheroigin@gmail.com">kcheroigin@gmail.com, demeveng@gmail.com</a>
         </p>
         <h3>License</h3>
         <p>

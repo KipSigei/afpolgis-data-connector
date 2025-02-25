@@ -25,6 +25,7 @@
 from qgis.PyQt.QtWidgets import QDialog
 from .afpolgis_dialog_base import Ui_AfpolGISDialogBase
 
+
 class AfpolGISDialog(QDialog, Ui_AfpolGISDialogBase):
     def __init__(self, parent=None, option=None):
         super(AfpolGISDialog, self).__init__(parent)

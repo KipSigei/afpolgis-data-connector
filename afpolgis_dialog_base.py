@@ -15,10 +15,14 @@ class Ui_AfpolGISDialogBase(object):
     def setupUi(self, AfpolGISDialogBase):
         AfpolGISDialogBase.setObjectName("AfpolGISDialogBase")
         AfpolGISDialogBase.resize(876, 775)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(AfpolGISDialogBase.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            AfpolGISDialogBase.sizePolicy().hasHeightForWidth()
+        )
         AfpolGISDialogBase.setSizePolicy(sizePolicy)
         AfpolGISDialogBase.setMinimumSize(QtCore.QSize(876, 775))
         icon = QtGui.QIcon()
@@ -26,7 +30,9 @@ class Ui_AfpolGISDialogBase(object):
         AfpolGISDialogBase.setWindowIcon(icon)
         self.tabWidget = QtWidgets.QTabWidget(AfpolGISDialogBase)
         self.tabWidget.setGeometry(QtCore.QRect(0, 0, 791, 681))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
@@ -75,49 +81,75 @@ class Ui_AfpolGISDialogBase(object):
         self.formLayout_2.setObjectName("formLayout_2")
         self.formSelectorLabel_2 = QtWidgets.QLabel(self.formGroup)
         self.formSelectorLabel_2.setObjectName("formSelectorLabel_2")
-        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_2)
+        self.formLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_2
+        )
         self.comboOnaForms = QtWidgets.QComboBox(self.formGroup)
         self.comboOnaForms.setObjectName("comboOnaForms")
-        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.comboOnaForms)
+        self.formLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.comboOnaForms
+        )
         self.geoFieldSelectorLabel_2 = QtWidgets.QLabel(self.formGroup)
         self.geoFieldSelectorLabel_2.setObjectName("geoFieldSelectorLabel_2")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_2)
+        self.formLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_2
+        )
         self.comboOnaGeoFields = QtWidgets.QComboBox(self.formGroup)
         self.comboOnaGeoFields.setObjectName("comboOnaGeoFields")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.comboOnaGeoFields)
+        self.formLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.comboOnaGeoFields
+        )
         self.authGroup = QtWidgets.QGroupBox(self.tab)
         self.authGroup.setGeometry(QtCore.QRect(10, 10, 741, 171))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.authGroup.sizePolicy().hasHeightForWidth())
         self.authGroup.setSizePolicy(sizePolicy)
         self.authGroup.setObjectName("authGroup")
         self.authLayout_2 = QtWidgets.QFormLayout(self.authGroup)
-        self.authLayout_2.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.authLayout_2.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.AllNonFixedFieldsGrow
+        )
         self.authLayout_2.setRowWrapPolicy(QtWidgets.QFormLayout.DontWrapRows)
         self.authLayout_2.setObjectName("authLayout_2")
         self.apiUrlLabel_2 = QtWidgets.QLabel(self.authGroup)
         self.apiUrlLabel_2.setObjectName("apiUrlLabel_2")
-        self.authLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_2)
+        self.authLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_2
+        )
         self.onadata_api_url = QtWidgets.QLineEdit(self.authGroup)
         self.onadata_api_url.setObjectName("onadata_api_url")
-        self.authLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.onadata_api_url)
+        self.authLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.onadata_api_url
+        )
         self.usernameLabel_2 = QtWidgets.QLabel(self.authGroup)
         self.usernameLabel_2.setObjectName("usernameLabel_2")
-        self.authLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_2)
+        self.authLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_2
+        )
         self.onadata_username = QtWidgets.QLineEdit(self.authGroup)
         self.onadata_username.setObjectName("onadata_username")
-        self.authLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.onadata_username)
+        self.authLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.onadata_username
+        )
         self.passwordLabel_2 = QtWidgets.QLabel(self.authGroup)
         self.passwordLabel_2.setObjectName("passwordLabel_2")
-        self.authLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_2)
+        self.authLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_2
+        )
         self.onaMLineEdit = QgsPasswordLineEdit(self.authGroup)
         self.onaMLineEdit.setObjectName("onaMLineEdit")
-        self.authLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.onaMLineEdit)
+        self.authLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.onaMLineEdit
+        )
         self.btnFetchOnaForms = QtWidgets.QPushButton(self.authGroup)
         self.btnFetchOnaForms.setObjectName("btnFetchOnaForms")
-        self.authLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.btnFetchOnaForms)
+        self.authLayout_2.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.btnFetchOnaForms
+        )
         self.syncGroup = QtWidgets.QGroupBox(self.tab)
         self.syncGroup.setGeometry(QtCore.QRect(10, 330, 741, 181))
         self.syncGroup.setObjectName("syncGroup")
@@ -125,23 +157,37 @@ class Ui_AfpolGISDialogBase(object):
         self.syncLayout_2.setObjectName("syncLayout_2")
         self.dateFromLabel_2 = QtWidgets.QLabel(self.syncGroup)
         self.dateFromLabel_2.setObjectName("dateFromLabel_2")
-        self.syncLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.dateFromLabel_2)
+        self.syncLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.dateFromLabel_2
+        )
         self.onaDateTimeFrom = QtWidgets.QDateEdit(self.syncGroup)
-        self.onaDateTimeFrom.setDateTime(QtCore.QDateTime(QtCore.QDate(2024, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.onaDateTimeFrom.setDateTime(
+            QtCore.QDateTime(QtCore.QDate(2024, 1, 1), QtCore.QTime(0, 0, 0))
+        )
         self.onaDateTimeFrom.setCalendarPopup(True)
         self.onaDateTimeFrom.setObjectName("onaDateTimeFrom")
-        self.syncLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.onaDateTimeFrom)
+        self.syncLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.onaDateTimeFrom
+        )
         self.dateToLabel_2 = QtWidgets.QLabel(self.syncGroup)
         self.dateToLabel_2.setObjectName("dateToLabel_2")
-        self.syncLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.dateToLabel_2)
+        self.syncLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.dateToLabel_2
+        )
         self.onaDateTimeTo = QtWidgets.QDateEdit(self.syncGroup)
-        self.onaDateTimeTo.setDateTime(QtCore.QDateTime(QtCore.QDate(2025, 12, 31), QtCore.QTime(0, 0, 0)))
+        self.onaDateTimeTo.setDateTime(
+            QtCore.QDateTime(QtCore.QDate(2025, 12, 31), QtCore.QTime(0, 0, 0))
+        )
         self.onaDateTimeTo.setCalendarPopup(True)
         self.onaDateTimeTo.setObjectName("onaDateTimeTo")
-        self.syncLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.onaDateTimeTo)
+        self.syncLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.onaDateTimeTo
+        )
         self.syncIntervalLabel_2 = QtWidgets.QLabel(self.syncGroup)
         self.syncIntervalLabel_2.setObjectName("syncIntervalLabel_2")
-        self.syncLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.syncIntervalLabel_2)
+        self.syncLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.syncIntervalLabel_2
+        )
         self.label = QtWidgets.QLabel(self.syncGroup)
         self.label.setObjectName("label")
         self.syncLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label)
@@ -153,12 +199,18 @@ class Ui_AfpolGISDialogBase(object):
         self.onaPageSize.setShowClearButton(False)
         self.onaPageSize.setClearValue(True)
         self.onaPageSize.setObjectName("onaPageSize")
-        self.syncLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.onaPageSize)
+        self.syncLayout_2.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.onaPageSize
+        )
         self.onaSyncInterval = QtWidgets.QSpinBox(self.syncGroup)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.onaSyncInterval.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.onaSyncInterval.sizePolicy().hasHeightForWidth()
+        )
         self.onaSyncInterval.setSizePolicy(sizePolicy)
         self.onaSyncInterval.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.onaSyncInterval.setWrapping(False)
@@ -166,7 +218,9 @@ class Ui_AfpolGISDialogBase(object):
         self.onaSyncInterval.setMaximum(3600)
         self.onaSyncInterval.setSingleStep(10)
         self.onaSyncInterval.setObjectName("onaSyncInterval")
-        self.syncLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.onaSyncInterval)
+        self.syncLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.onaSyncInterval
+        )
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -177,25 +231,39 @@ class Ui_AfpolGISDialogBase(object):
         self.authLayout_3.setObjectName("authLayout_3")
         self.apiUrlLabel_3 = QtWidgets.QLabel(self.authGroup_2)
         self.apiUrlLabel_3.setObjectName("apiUrlLabel_3")
-        self.authLayout_3.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_3)
+        self.authLayout_3.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_3
+        )
         self.odk_api_url = QtWidgets.QLineEdit(self.authGroup_2)
         self.odk_api_url.setObjectName("odk_api_url")
-        self.authLayout_3.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.odk_api_url)
+        self.authLayout_3.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.odk_api_url
+        )
         self.usernameLabel_3 = QtWidgets.QLabel(self.authGroup_2)
         self.usernameLabel_3.setObjectName("usernameLabel_3")
-        self.authLayout_3.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_3)
+        self.authLayout_3.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_3
+        )
         self.odk_username = QtWidgets.QLineEdit(self.authGroup_2)
         self.odk_username.setObjectName("odk_username")
-        self.authLayout_3.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.odk_username)
+        self.authLayout_3.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.odk_username
+        )
         self.passwordLabel_3 = QtWidgets.QLabel(self.authGroup_2)
         self.passwordLabel_3.setObjectName("passwordLabel_3")
-        self.authLayout_3.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_3)
+        self.authLayout_3.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_3
+        )
         self.odkmLineEdit = QgsPasswordLineEdit(self.authGroup_2)
         self.odkmLineEdit.setObjectName("odkmLineEdit")
-        self.authLayout_3.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.odkmLineEdit)
+        self.authLayout_3.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.odkmLineEdit
+        )
         self.btnFetchODKForms = QtWidgets.QPushButton(self.authGroup_2)
         self.btnFetchODKForms.setObjectName("btnFetchODKForms")
-        self.authLayout_3.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.btnFetchODKForms)
+        self.authLayout_3.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.btnFetchODKForms
+        )
         self.formGroup_3 = QtWidgets.QGroupBox(self.tab_2)
         self.formGroup_3.setGeometry(QtCore.QRect(10, 200, 741, 111))
         self.formGroup_3.setObjectName("formGroup_3")
@@ -203,16 +271,24 @@ class Ui_AfpolGISDialogBase(object):
         self.formLayout_4.setObjectName("formLayout_4")
         self.formSelectorLabel_4 = QtWidgets.QLabel(self.formGroup_3)
         self.formSelectorLabel_4.setObjectName("formSelectorLabel_4")
-        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_4)
+        self.formLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_4
+        )
         self.comboODKForms = QtWidgets.QComboBox(self.formGroup_3)
         self.comboODKForms.setObjectName("comboODKForms")
-        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.comboODKForms)
+        self.formLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.comboODKForms
+        )
         self.geoFieldSelectorLabel_4 = QtWidgets.QLabel(self.formGroup_3)
         self.geoFieldSelectorLabel_4.setObjectName("geoFieldSelectorLabel_4")
-        self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_4)
+        self.formLayout_4.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_4
+        )
         self.comboODKGeoFields = QtWidgets.QComboBox(self.formGroup_3)
         self.comboODKGeoFields.setObjectName("comboODKGeoFields")
-        self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.comboODKGeoFields)
+        self.formLayout_4.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.comboODKGeoFields
+        )
         self.syncGroup_3 = QtWidgets.QGroupBox(self.tab_2)
         self.syncGroup_3.setGeometry(QtCore.QRect(10, 330, 741, 181))
         self.syncGroup_3.setObjectName("syncGroup_3")
@@ -220,29 +296,45 @@ class Ui_AfpolGISDialogBase(object):
         self.syncLayout_4.setObjectName("syncLayout_4")
         self.dateFromLabel_4 = QtWidgets.QLabel(self.syncGroup_3)
         self.dateFromLabel_4.setObjectName("dateFromLabel_4")
-        self.syncLayout_4.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.dateFromLabel_4)
+        self.syncLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.dateFromLabel_4
+        )
         self.ODKDateTimeFrom = QtWidgets.QDateEdit(self.syncGroup_3)
-        self.ODKDateTimeFrom.setDateTime(QtCore.QDateTime(QtCore.QDate(2024, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.ODKDateTimeFrom.setDateTime(
+            QtCore.QDateTime(QtCore.QDate(2024, 1, 1), QtCore.QTime(0, 0, 0))
+        )
         self.ODKDateTimeFrom.setCalendarPopup(True)
         self.ODKDateTimeFrom.setObjectName("ODKDateTimeFrom")
-        self.syncLayout_4.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.ODKDateTimeFrom)
+        self.syncLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.ODKDateTimeFrom
+        )
         self.dateToLabel_4 = QtWidgets.QLabel(self.syncGroup_3)
         self.dateToLabel_4.setObjectName("dateToLabel_4")
-        self.syncLayout_4.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.dateToLabel_4)
+        self.syncLayout_4.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.dateToLabel_4
+        )
         self.ODKDateTimeTo = QtWidgets.QDateEdit(self.syncGroup_3)
-        self.ODKDateTimeTo.setDateTime(QtCore.QDateTime(QtCore.QDate(2025, 12, 31), QtCore.QTime(0, 0, 0)))
+        self.ODKDateTimeTo.setDateTime(
+            QtCore.QDateTime(QtCore.QDate(2025, 12, 31), QtCore.QTime(0, 0, 0))
+        )
         self.ODKDateTimeTo.setCalendarPopup(True)
         self.ODKDateTimeTo.setObjectName("ODKDateTimeTo")
-        self.syncLayout_4.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.ODKDateTimeTo)
+        self.syncLayout_4.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.ODKDateTimeTo
+        )
         self.syncIntervalLabel_4 = QtWidgets.QLabel(self.syncGroup_3)
         self.syncIntervalLabel_4.setObjectName("syncIntervalLabel_4")
-        self.syncLayout_4.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.syncIntervalLabel_4)
+        self.syncLayout_4.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.syncIntervalLabel_4
+        )
         self.odkSyncInterval = QtWidgets.QSpinBox(self.syncGroup_3)
         self.odkSyncInterval.setMinimum(0)
         self.odkSyncInterval.setMaximum(3600)
         self.odkSyncInterval.setSingleStep(10)
         self.odkSyncInterval.setObjectName("odkSyncInterval")
-        self.syncLayout_4.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.odkSyncInterval)
+        self.syncLayout_4.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.odkSyncInterval
+        )
         self.label_2 = QtWidgets.QLabel(self.syncGroup_3)
         self.label_2.setObjectName("label_2")
         self.syncLayout_4.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_2)
@@ -251,7 +343,9 @@ class Ui_AfpolGISDialogBase(object):
         self.odkPageSize.setMaximum(10000)
         self.odkPageSize.setSingleStep(100)
         self.odkPageSize.setObjectName("odkPageSize")
-        self.syncLayout_4.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.odkPageSize)
+        self.syncLayout_4.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.odkPageSize
+        )
         self.layoutWidget_3 = QtWidgets.QWidget(self.tab_2)
         self.layoutWidget_3.setGeometry(QtCore.QRect(10, 540, 741, 65))
         self.layoutWidget_3.setObjectName("layoutWidget_3")
@@ -285,25 +379,39 @@ class Ui_AfpolGISDialogBase(object):
         self.authLayout_4.setObjectName("authLayout_4")
         self.apiUrlLabel_4 = QtWidgets.QLabel(self.authGroup_3)
         self.apiUrlLabel_4.setObjectName("apiUrlLabel_4")
-        self.authLayout_4.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_4)
+        self.authLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_4
+        )
         self.kobo_api_url = QtWidgets.QLineEdit(self.authGroup_3)
         self.kobo_api_url.setObjectName("kobo_api_url")
-        self.authLayout_4.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.kobo_api_url)
+        self.authLayout_4.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.kobo_api_url
+        )
         self.usernameLabel_4 = QtWidgets.QLabel(self.authGroup_3)
         self.usernameLabel_4.setObjectName("usernameLabel_4")
-        self.authLayout_4.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_4)
+        self.authLayout_4.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_4
+        )
         self.kobo_username = QtWidgets.QLineEdit(self.authGroup_3)
         self.kobo_username.setObjectName("kobo_username")
-        self.authLayout_4.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.kobo_username)
+        self.authLayout_4.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.kobo_username
+        )
         self.passwordLabel_4 = QtWidgets.QLabel(self.authGroup_3)
         self.passwordLabel_4.setObjectName("passwordLabel_4")
-        self.authLayout_4.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_4)
+        self.authLayout_4.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_4
+        )
         self.koboMLineEdit = QgsPasswordLineEdit(self.authGroup_3)
         self.koboMLineEdit.setObjectName("koboMLineEdit")
-        self.authLayout_4.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.koboMLineEdit)
+        self.authLayout_4.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.koboMLineEdit
+        )
         self.btnFetchKoboForms = QtWidgets.QPushButton(self.authGroup_3)
         self.btnFetchKoboForms.setObjectName("btnFetchKoboForms")
-        self.authLayout_4.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.btnFetchKoboForms)
+        self.authLayout_4.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.btnFetchKoboForms
+        )
         self.formGroup_4 = QtWidgets.QGroupBox(self.tab_3)
         self.formGroup_4.setGeometry(QtCore.QRect(10, 200, 741, 111))
         self.formGroup_4.setObjectName("formGroup_4")
@@ -311,16 +419,24 @@ class Ui_AfpolGISDialogBase(object):
         self.formLayout_5.setObjectName("formLayout_5")
         self.formSelectorLabel_5 = QtWidgets.QLabel(self.formGroup_4)
         self.formSelectorLabel_5.setObjectName("formSelectorLabel_5")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_5)
+        self.formLayout_5.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_5
+        )
         self.comboKoboForms = QtWidgets.QComboBox(self.formGroup_4)
         self.comboKoboForms.setObjectName("comboKoboForms")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.comboKoboForms)
+        self.formLayout_5.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.comboKoboForms
+        )
         self.geoFieldSelectorLabel_5 = QtWidgets.QLabel(self.formGroup_4)
         self.geoFieldSelectorLabel_5.setObjectName("geoFieldSelectorLabel_5")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_5)
+        self.formLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_5
+        )
         self.comboKoboGeoFields = QtWidgets.QComboBox(self.formGroup_4)
         self.comboKoboGeoFields.setObjectName("comboKoboGeoFields")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.comboKoboGeoFields)
+        self.formLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.comboKoboGeoFields
+        )
         self.syncGroup_4 = QtWidgets.QGroupBox(self.tab_3)
         self.syncGroup_4.setGeometry(QtCore.QRect(10, 330, 741, 181))
         self.syncGroup_4.setObjectName("syncGroup_4")
@@ -328,29 +444,45 @@ class Ui_AfpolGISDialogBase(object):
         self.syncLayout_5.setObjectName("syncLayout_5")
         self.dateFromLabel_5 = QtWidgets.QLabel(self.syncGroup_4)
         self.dateFromLabel_5.setObjectName("dateFromLabel_5")
-        self.syncLayout_5.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.dateFromLabel_5)
+        self.syncLayout_5.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.dateFromLabel_5
+        )
         self.KoboDateTimeFrom = QtWidgets.QDateEdit(self.syncGroup_4)
-        self.KoboDateTimeFrom.setDateTime(QtCore.QDateTime(QtCore.QDate(2024, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.KoboDateTimeFrom.setDateTime(
+            QtCore.QDateTime(QtCore.QDate(2024, 1, 1), QtCore.QTime(0, 0, 0))
+        )
         self.KoboDateTimeFrom.setCalendarPopup(True)
         self.KoboDateTimeFrom.setObjectName("KoboDateTimeFrom")
-        self.syncLayout_5.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.KoboDateTimeFrom)
+        self.syncLayout_5.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.KoboDateTimeFrom
+        )
         self.dateToLabel_5 = QtWidgets.QLabel(self.syncGroup_4)
         self.dateToLabel_5.setObjectName("dateToLabel_5")
-        self.syncLayout_5.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.dateToLabel_5)
+        self.syncLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.dateToLabel_5
+        )
         self.KoboDateTimeTo = QtWidgets.QDateEdit(self.syncGroup_4)
-        self.KoboDateTimeTo.setDateTime(QtCore.QDateTime(QtCore.QDate(2025, 12, 31), QtCore.QTime(0, 0, 0)))
+        self.KoboDateTimeTo.setDateTime(
+            QtCore.QDateTime(QtCore.QDate(2025, 12, 31), QtCore.QTime(0, 0, 0))
+        )
         self.KoboDateTimeTo.setCalendarPopup(True)
         self.KoboDateTimeTo.setObjectName("KoboDateTimeTo")
-        self.syncLayout_5.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.KoboDateTimeTo)
+        self.syncLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.KoboDateTimeTo
+        )
         self.syncIntervalLabel_5 = QtWidgets.QLabel(self.syncGroup_4)
         self.syncIntervalLabel_5.setObjectName("syncIntervalLabel_5")
-        self.syncLayout_5.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.syncIntervalLabel_5)
+        self.syncLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.syncIntervalLabel_5
+        )
         self.koboSyncInterval = QtWidgets.QSpinBox(self.syncGroup_4)
         self.koboSyncInterval.setMinimum(0)
         self.koboSyncInterval.setMaximum(3600)
         self.koboSyncInterval.setSingleStep(10)
         self.koboSyncInterval.setObjectName("koboSyncInterval")
-        self.syncLayout_5.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.koboSyncInterval)
+        self.syncLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.koboSyncInterval
+        )
         self.label_3 = QtWidgets.QLabel(self.syncGroup_4)
         self.label_3.setObjectName("label_3")
         self.syncLayout_5.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_3)
@@ -359,7 +491,9 @@ class Ui_AfpolGISDialogBase(object):
         self.koboPageSize.setMaximum(10000)
         self.koboPageSize.setSingleStep(100)
         self.koboPageSize.setObjectName("koboPageSize")
-        self.syncLayout_5.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.koboPageSize)
+        self.syncLayout_5.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.koboPageSize
+        )
         self.layoutWidget_4 = QtWidgets.QWidget(self.tab_3)
         self.layoutWidget_4.setGeometry(QtCore.QRect(10, 540, 741, 65))
         self.layoutWidget_4.setObjectName("layoutWidget_4")
@@ -392,30 +526,46 @@ class Ui_AfpolGISDialogBase(object):
         self.authGroup_4.setObjectName("authGroup_4")
         self.authLayout_5 = QtWidgets.QFormLayout(self.authGroup_4)
         self.authLayout_5.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
-        self.authLayout_5.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.authLayout_5.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.AllNonFixedFieldsGrow
+        )
         self.authLayout_5.setRowWrapPolicy(QtWidgets.QFormLayout.DontWrapRows)
         self.authLayout_5.setObjectName("authLayout_5")
         self.apiUrlLabel_5 = QtWidgets.QLabel(self.authGroup_4)
         self.apiUrlLabel_5.setObjectName("apiUrlLabel_5")
-        self.authLayout_5.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_5)
+        self.authLayout_5.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_5
+        )
         self.gts_api_url = QtWidgets.QLineEdit(self.authGroup_4)
         self.gts_api_url.setObjectName("gts_api_url")
-        self.authLayout_5.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.gts_api_url)
+        self.authLayout_5.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.gts_api_url
+        )
         self.usernameLabel_5 = QtWidgets.QLabel(self.authGroup_4)
         self.usernameLabel_5.setObjectName("usernameLabel_5")
-        self.authLayout_5.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_5)
+        self.authLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_5
+        )
         self.gts_username = QtWidgets.QLineEdit(self.authGroup_4)
         self.gts_username.setObjectName("gts_username")
-        self.authLayout_5.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.gts_username)
+        self.authLayout_5.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.gts_username
+        )
         self.passwordLabel_5 = QtWidgets.QLabel(self.authGroup_4)
         self.passwordLabel_5.setObjectName("passwordLabel_5")
-        self.authLayout_5.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_5)
+        self.authLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_5
+        )
         self.gtsMLineEdit = QgsPasswordLineEdit(self.authGroup_4)
         self.gtsMLineEdit.setObjectName("gtsMLineEdit")
-        self.authLayout_5.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.gtsMLineEdit)
+        self.authLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.gtsMLineEdit
+        )
         self.btnFetchGTSTables = QtWidgets.QPushButton(self.authGroup_4)
         self.btnFetchGTSTables.setObjectName("btnFetchGTSTables")
-        self.authLayout_5.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.btnFetchGTSTables)
+        self.authLayout_5.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.btnFetchGTSTables
+        )
         self.formGroup_5 = QtWidgets.QGroupBox(self.tab_4)
         self.formGroup_5.setGeometry(QtCore.QRect(10, 200, 741, 151))
         self.formGroup_5.setObjectName("formGroup_5")
@@ -423,19 +573,29 @@ class Ui_AfpolGISDialogBase(object):
         self.formLayout_6.setObjectName("formLayout_6")
         self.formSelectorLabel_6 = QtWidgets.QLabel(self.formGroup_5)
         self.formSelectorLabel_6.setObjectName("formSelectorLabel_6")
-        self.formLayout_6.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_6)
+        self.formLayout_6.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_6
+        )
         self.comboGTSFieldActivities = QtWidgets.QComboBox(self.formGroup_5)
         self.comboGTSFieldActivities.setObjectName("comboGTSFieldActivities")
-        self.formLayout_6.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.comboGTSFieldActivities)
+        self.formLayout_6.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.comboGTSFieldActivities
+        )
         self.geoFieldSelectorLabel_6 = QtWidgets.QLabel(self.formGroup_5)
         self.geoFieldSelectorLabel_6.setObjectName("geoFieldSelectorLabel_6")
-        self.formLayout_6.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_6)
+        self.formLayout_6.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_6
+        )
         self.comboGTSTrackingRounds = QtWidgets.QComboBox(self.formGroup_5)
         self.comboGTSTrackingRounds.setObjectName("comboGTSTrackingRounds")
-        self.formLayout_6.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.comboGTSTrackingRounds)
+        self.formLayout_6.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.comboGTSTrackingRounds
+        )
         self.comboGTSTableTypes = QtWidgets.QComboBox(self.formGroup_5)
         self.comboGTSTableTypes.setObjectName("comboGTSTableTypes")
-        self.formLayout_6.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.comboGTSTableTypes)
+        self.formLayout_6.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.comboGTSTableTypes
+        )
         self.label_8 = QtWidgets.QLabel(self.formGroup_5)
         self.label_8.setObjectName("label_8")
         self.formLayout_6.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_8)
@@ -472,16 +632,24 @@ class Ui_AfpolGISDialogBase(object):
         self.formLayout_7.setObjectName("formLayout_7")
         self.formSelectorLabel_7 = QtWidgets.QLabel(self.formGroup_6)
         self.formSelectorLabel_7.setObjectName("formSelectorLabel_7")
-        self.formLayout_7.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_7)
+        self.formLayout_7.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.formSelectorLabel_7
+        )
         self.geoFieldSelectorLabel_7 = QtWidgets.QLabel(self.formGroup_6)
         self.geoFieldSelectorLabel_7.setObjectName("geoFieldSelectorLabel_7")
-        self.formLayout_7.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_7)
+        self.formLayout_7.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.geoFieldSelectorLabel_7
+        )
         self.combESTopology = QtWidgets.QComboBox(self.formGroup_6)
         self.combESTopology.setObjectName("combESTopology")
-        self.formLayout_7.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.combESTopology)
+        self.formLayout_7.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.combESTopology
+        )
         self.esAPIVersion = QtWidgets.QLineEdit(self.formGroup_6)
         self.esAPIVersion.setObjectName("esAPIVersion")
-        self.formLayout_7.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.esAPIVersion)
+        self.formLayout_7.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.esAPIVersion
+        )
         self.es_api_url = QtWidgets.QLineEdit(self.formGroup_6)
         self.es_api_url.setObjectName("es_api_url")
         self.formLayout_7.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.es_api_url)
@@ -520,30 +688,46 @@ class Ui_AfpolGISDialogBase(object):
         self.authGroup_5.setObjectName("authGroup_5")
         self.authLayout_6 = QtWidgets.QFormLayout(self.authGroup_5)
         self.authLayout_6.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
-        self.authLayout_6.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.authLayout_6.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.AllNonFixedFieldsGrow
+        )
         self.authLayout_6.setRowWrapPolicy(QtWidgets.QFormLayout.DontWrapRows)
         self.authLayout_6.setObjectName("authLayout_6")
         self.apiUrlLabel_6 = QtWidgets.QLabel(self.authGroup_5)
         self.apiUrlLabel_6.setObjectName("apiUrlLabel_6")
-        self.authLayout_6.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_6)
+        self.authLayout_6.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.apiUrlLabel_6
+        )
         self.dhis_api_url = QtWidgets.QLineEdit(self.authGroup_5)
         self.dhis_api_url.setObjectName("dhis_api_url")
-        self.authLayout_6.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.dhis_api_url)
+        self.authLayout_6.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.dhis_api_url
+        )
         self.usernameLabel_6 = QtWidgets.QLabel(self.authGroup_5)
         self.usernameLabel_6.setObjectName("usernameLabel_6")
-        self.authLayout_6.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_6)
+        self.authLayout_6.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.usernameLabel_6
+        )
         self.dhis_username = QtWidgets.QLineEdit(self.authGroup_5)
         self.dhis_username.setObjectName("dhis_username")
-        self.authLayout_6.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.dhis_username)
+        self.authLayout_6.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.dhis_username
+        )
         self.passwordLabel_6 = QtWidgets.QLabel(self.authGroup_5)
         self.passwordLabel_6.setObjectName("passwordLabel_6")
-        self.authLayout_6.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_6)
+        self.authLayout_6.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.passwordLabel_6
+        )
         self.dhisMLineEdit = QgsPasswordLineEdit(self.authGroup_5)
         self.dhisMLineEdit.setObjectName("dhisMLineEdit")
-        self.authLayout_6.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.dhisMLineEdit)
+        self.authLayout_6.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.dhisMLineEdit
+        )
         self.btnFetchDhisCategory = QtWidgets.QPushButton(self.authGroup_5)
         self.btnFetchDhisCategory.setObjectName("btnFetchDhisCategory")
-        self.authLayout_6.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.btnFetchDhisCategory)
+        self.authLayout_6.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.btnFetchDhisCategory
+        )
         self.formGroup_7 = QtWidgets.QGroupBox(self.tab_6)
         self.formGroup_7.setGeometry(QtCore.QRect(10, 200, 741, 201))
         self.formGroup_7.setObjectName("formGroup_7")
@@ -554,28 +738,38 @@ class Ui_AfpolGISDialogBase(object):
         self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_6)
         self.ComboDhisAdminLevels = QtWidgets.QComboBox(self.formGroup_7)
         self.ComboDhisAdminLevels.setObjectName("ComboDhisAdminLevels")
-        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.ComboDhisAdminLevels)
+        self.formLayout_8.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.ComboDhisAdminLevels
+        )
         self.label_9 = QtWidgets.QLabel(self.formGroup_7)
         self.label_9.setObjectName("label_9")
         self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_9)
         self.comboDhisProgramsOrDataSets = QtWidgets.QComboBox(self.formGroup_7)
         self.comboDhisProgramsOrDataSets.setObjectName("comboDhisProgramsOrDataSets")
-        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.comboDhisProgramsOrDataSets)
+        self.formLayout_8.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.comboDhisProgramsOrDataSets
+        )
         self.label_5 = QtWidgets.QLabel(self.formGroup_7)
         self.label_5.setObjectName("label_5")
         self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_5)
         self.comboDhisIndicators = QtWidgets.QComboBox(self.formGroup_7)
         self.comboDhisIndicators.setObjectName("comboDhisIndicators")
-        self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.comboDhisIndicators)
+        self.formLayout_8.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.comboDhisIndicators
+        )
         self.label_7 = QtWidgets.QLabel(self.formGroup_7)
         self.label_7.setObjectName("label_7")
         self.formLayout_8.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_7)
         self.comboDhisPeriod = QtWidgets.QComboBox(self.formGroup_7)
         self.comboDhisPeriod.setObjectName("comboDhisPeriod")
-        self.formLayout_8.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.comboDhisPeriod)
+        self.formLayout_8.setWidget(
+            4, QtWidgets.QFormLayout.FieldRole, self.comboDhisPeriod
+        )
         self.ComboDhisCategory = QtWidgets.QComboBox(self.formGroup_7)
         self.ComboDhisCategory.setObjectName("ComboDhisCategory")
-        self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.ComboDhisCategory)
+        self.formLayout_8.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.ComboDhisCategory
+        )
         self.label_10 = QtWidgets.QLabel(self.formGroup_7)
         self.label_10.setObjectName("label_10")
         self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_10)
@@ -625,89 +819,144 @@ class Ui_AfpolGISDialogBase(object):
 
     def retranslateUi(self, AfpolGISDialogBase):
         _translate = QtCore.QCoreApplication.translate
-        AfpolGISDialogBase.setWindowTitle(_translate("AfpolGISDialogBase", "AfpolGIS Data Connector"))
+        AfpolGISDialogBase.setWindowTitle(
+            _translate("AfpolGISDialogBase", "AfpolGIS Data Connector")
+        )
         self.onaProgressBar.setFormat(_translate("AfpolGISDialogBase", "%p%"))
         self.onaCancelButton.setText(_translate("AfpolGISDialogBase", "Cancel"))
         self.onaOkButton.setText(_translate("AfpolGISDialogBase", "Load Data To Map"))
         self.onaDownloadCSV.setText(_translate("AfpolGISDialogBase", "Export CSV"))
         self.formGroup.setTitle(_translate("AfpolGISDialogBase", "Form Selection"))
-        self.formSelectorLabel_2.setText(_translate("AfpolGISDialogBase", "Select Form:"))
-        self.geoFieldSelectorLabel_2.setText(_translate("AfpolGISDialogBase", "Select Geo Field:"))
+        self.formSelectorLabel_2.setText(
+            _translate("AfpolGISDialogBase", "Select Form:")
+        )
+        self.geoFieldSelectorLabel_2.setText(
+            _translate("AfpolGISDialogBase", "Select Geo Field:")
+        )
         self.authGroup.setTitle(_translate("AfpolGISDialogBase", "Authentication"))
         self.apiUrlLabel_2.setText(_translate("AfpolGISDialogBase", "API Base URL:"))
         self.usernameLabel_2.setText(_translate("AfpolGISDialogBase", "Username:"))
         self.passwordLabel_2.setText(_translate("AfpolGISDialogBase", "Password:"))
         self.btnFetchOnaForms.setText(_translate("AfpolGISDialogBase", "Connect"))
         self.syncGroup.setTitle(_translate("AfpolGISDialogBase", "Sync Options"))
-        self.dateFromLabel_2.setText(_translate("AfpolGISDialogBase", "Date Range From:"))
-        self.onaDateTimeFrom.setDisplayFormat(_translate("AfpolGISDialogBase", "yyyy-MM-dd"))
+        self.dateFromLabel_2.setText(
+            _translate("AfpolGISDialogBase", "Date Range From:")
+        )
+        self.onaDateTimeFrom.setDisplayFormat(
+            _translate("AfpolGISDialogBase", "yyyy-MM-dd")
+        )
         self.dateToLabel_2.setText(_translate("AfpolGISDialogBase", "Date Range To:"))
-        self.onaDateTimeTo.setDisplayFormat(_translate("AfpolGISDialogBase", "yyyy-MM-dd"))
-        self.syncIntervalLabel_2.setText(_translate("AfpolGISDialogBase", "Sync Interval:"))
+        self.onaDateTimeTo.setDisplayFormat(
+            _translate("AfpolGISDialogBase", "yyyy-MM-dd")
+        )
+        self.syncIntervalLabel_2.setText(
+            _translate("AfpolGISDialogBase", "Sync Interval:")
+        )
         self.label.setText(_translate("AfpolGISDialogBase", "Page Size"))
         self.onaSyncInterval.setSuffix(_translate("AfpolGISDialogBase", " Seconds"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("AfpolGISDialogBase", "OnaData"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab),
+            _translate("AfpolGISDialogBase", "OnaData"),
+        )
         self.authGroup_2.setTitle(_translate("AfpolGISDialogBase", "Authentication"))
         self.apiUrlLabel_3.setText(_translate("AfpolGISDialogBase", "API Base URL:"))
         self.usernameLabel_3.setText(_translate("AfpolGISDialogBase", "Username:"))
         self.passwordLabel_3.setText(_translate("AfpolGISDialogBase", "Password:"))
         self.btnFetchODKForms.setText(_translate("AfpolGISDialogBase", "Connect"))
         self.formGroup_3.setTitle(_translate("AfpolGISDialogBase", "Form Selection"))
-        self.formSelectorLabel_4.setText(_translate("AfpolGISDialogBase", "Select Form:"))
-        self.geoFieldSelectorLabel_4.setText(_translate("AfpolGISDialogBase", "Select Geo Field:"))
+        self.formSelectorLabel_4.setText(
+            _translate("AfpolGISDialogBase", "Select Form:")
+        )
+        self.geoFieldSelectorLabel_4.setText(
+            _translate("AfpolGISDialogBase", "Select Geo Field:")
+        )
         self.syncGroup_3.setTitle(_translate("AfpolGISDialogBase", "Sync Options"))
-        self.dateFromLabel_4.setText(_translate("AfpolGISDialogBase", "Date Range From:"))
-        self.ODKDateTimeFrom.setDisplayFormat(_translate("AfpolGISDialogBase", "yyyy-MM-dd"))
+        self.dateFromLabel_4.setText(
+            _translate("AfpolGISDialogBase", "Date Range From:")
+        )
+        self.ODKDateTimeFrom.setDisplayFormat(
+            _translate("AfpolGISDialogBase", "yyyy-MM-dd")
+        )
         self.dateToLabel_4.setText(_translate("AfpolGISDialogBase", "Date Range To:"))
-        self.ODKDateTimeTo.setDisplayFormat(_translate("AfpolGISDialogBase", "yyyy-MM-dd"))
-        self.syncIntervalLabel_4.setText(_translate("AfpolGISDialogBase", "Sync Interval:"))
+        self.ODKDateTimeTo.setDisplayFormat(
+            _translate("AfpolGISDialogBase", "yyyy-MM-dd")
+        )
+        self.syncIntervalLabel_4.setText(
+            _translate("AfpolGISDialogBase", "Sync Interval:")
+        )
         self.odkSyncInterval.setSuffix(_translate("AfpolGISDialogBase", " Seconds"))
         self.label_2.setText(_translate("AfpolGISDialogBase", "Page Size"))
         self.odkCancelButton.setText(_translate("AfpolGISDialogBase", "Cancel"))
         self.odkOkButton.setText(_translate("AfpolGISDialogBase", "Load Data To Map"))
         self.odkDownloadCSV.setText(_translate("AfpolGISDialogBase", "Export CSV"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("AfpolGISDialogBase", "ODK"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab_2), _translate("AfpolGISDialogBase", "ODK")
+        )
         self.authGroup_3.setTitle(_translate("AfpolGISDialogBase", "Authentication"))
         self.apiUrlLabel_4.setText(_translate("AfpolGISDialogBase", "API Base URL:"))
         self.usernameLabel_4.setText(_translate("AfpolGISDialogBase", "Username:"))
         self.passwordLabel_4.setText(_translate("AfpolGISDialogBase", "Password:"))
         self.btnFetchKoboForms.setText(_translate("AfpolGISDialogBase", "Connect"))
         self.formGroup_4.setTitle(_translate("AfpolGISDialogBase", "Form Selection"))
-        self.formSelectorLabel_5.setText(_translate("AfpolGISDialogBase", "Select Form:"))
-        self.geoFieldSelectorLabel_5.setText(_translate("AfpolGISDialogBase", "Select Geo Field:"))
+        self.formSelectorLabel_5.setText(
+            _translate("AfpolGISDialogBase", "Select Form:")
+        )
+        self.geoFieldSelectorLabel_5.setText(
+            _translate("AfpolGISDialogBase", "Select Geo Field:")
+        )
         self.syncGroup_4.setTitle(_translate("AfpolGISDialogBase", "Sync Options"))
-        self.dateFromLabel_5.setText(_translate("AfpolGISDialogBase", "Date Range From:"))
-        self.KoboDateTimeFrom.setDisplayFormat(_translate("AfpolGISDialogBase", "yyyy-MM-dd"))
+        self.dateFromLabel_5.setText(
+            _translate("AfpolGISDialogBase", "Date Range From:")
+        )
+        self.KoboDateTimeFrom.setDisplayFormat(
+            _translate("AfpolGISDialogBase", "yyyy-MM-dd")
+        )
         self.dateToLabel_5.setText(_translate("AfpolGISDialogBase", "Date Range To:"))
-        self.KoboDateTimeTo.setDisplayFormat(_translate("AfpolGISDialogBase", "yyyy-MM-dd"))
-        self.syncIntervalLabel_5.setText(_translate("AfpolGISDialogBase", "Sync Interval:"))
+        self.KoboDateTimeTo.setDisplayFormat(
+            _translate("AfpolGISDialogBase", "yyyy-MM-dd")
+        )
+        self.syncIntervalLabel_5.setText(
+            _translate("AfpolGISDialogBase", "Sync Interval:")
+        )
         self.koboSyncInterval.setSuffix(_translate("AfpolGISDialogBase", " Seconds"))
         self.label_3.setText(_translate("AfpolGISDialogBase", "Page Size"))
         self.koboCancelButton.setText(_translate("AfpolGISDialogBase", "Cancel"))
         self.koboOkButton.setText(_translate("AfpolGISDialogBase", "Load Data To Map"))
         self.koboDownloadCSV.setText(_translate("AfpolGISDialogBase", "Export CSV"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("AfpolGISDialogBase", "Kobo"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab_3), _translate("AfpolGISDialogBase", "Kobo")
+        )
         self.authGroup_4.setTitle(_translate("AfpolGISDialogBase", "Authentication"))
         self.apiUrlLabel_5.setText(_translate("AfpolGISDialogBase", "API Base URL:"))
         self.usernameLabel_5.setText(_translate("AfpolGISDialogBase", "Username:"))
         self.passwordLabel_5.setText(_translate("AfpolGISDialogBase", "Password:"))
         self.btnFetchGTSTables.setText(_translate("AfpolGISDialogBase", "Connect"))
         self.formGroup_5.setTitle(_translate("AfpolGISDialogBase", "Select Options"))
-        self.formSelectorLabel_6.setText(_translate("AfpolGISDialogBase", "Field Activity"))
-        self.geoFieldSelectorLabel_6.setText(_translate("AfpolGISDialogBase", "Tracking Rounds"))
+        self.formSelectorLabel_6.setText(
+            _translate("AfpolGISDialogBase", "Field Activity")
+        )
+        self.geoFieldSelectorLabel_6.setText(
+            _translate("AfpolGISDialogBase", "Tracking Rounds")
+        )
         self.label_8.setText(_translate("AfpolGISDialogBase", "Select Category"))
         self.gtsCancelButton.setText(_translate("AfpolGISDialogBase", "Cancel"))
         self.gtsOkButton.setText(_translate("AfpolGISDialogBase", "Load Data To Map"))
         self.gtsDownloadCSV.setText(_translate("AfpolGISDialogBase", "Export CSV"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("AfpolGISDialogBase", "GTS"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab_4), _translate("AfpolGISDialogBase", "GTS")
+        )
         self.formGroup_6.setTitle(_translate("AfpolGISDialogBase", "Options"))
         self.formSelectorLabel_7.setText(_translate("AfpolGISDialogBase", "Version"))
-        self.geoFieldSelectorLabel_7.setText(_translate("AfpolGISDialogBase", "Topography:"))
+        self.geoFieldSelectorLabel_7.setText(
+            _translate("AfpolGISDialogBase", "Topography:")
+        )
         self.label_4.setText(_translate("AfpolGISDialogBase", "API Base URL"))
         self.esCancelButton.setText(_translate("AfpolGISDialogBase", "Cancel"))
         self.esOkButton.setText(_translate("AfpolGISDialogBase", "Load Data To Map"))
         self.esDownloadCSV.setText(_translate("AfpolGISDialogBase", "Export CSV"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _translate("AfpolGISDialogBase", "ES"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab_5), _translate("AfpolGISDialogBase", "ES")
+        )
         self.authGroup_5.setTitle(_translate("AfpolGISDialogBase", "Authentication"))
         self.apiUrlLabel_6.setText(_translate("AfpolGISDialogBase", "API Base URL:"))
         self.usernameLabel_6.setText(_translate("AfpolGISDialogBase", "Username:"))
@@ -715,17 +964,32 @@ class Ui_AfpolGISDialogBase(object):
         self.btnFetchDhisCategory.setText(_translate("AfpolGISDialogBase", "Connect"))
         self.formGroup_7.setTitle(_translate("AfpolGISDialogBase", "Select Options"))
         self.label_6.setText(_translate("AfpolGISDialogBase", "Select Admin Level:"))
-        self.label_9.setText(_translate("AfpolGISDialogBase", "Select Program / DataSet"))
+        self.label_9.setText(
+            _translate("AfpolGISDialogBase", "Select Program / DataSet")
+        )
         self.label_5.setText(_translate("AfpolGISDialogBase", "Select Indicator"))
         self.label_7.setText(_translate("AfpolGISDialogBase", "Period"))
         self.label_10.setText(_translate("AfpolGISDialogBase", "Select Category"))
         self.dhisCancelButton.setText(_translate("AfpolGISDialogBase", "Cancel"))
         self.dhisOkButton.setText(_translate("AfpolGISDialogBase", "Load Data To Map"))
         self.dhisDownloadCSV.setText(_translate("AfpolGISDialogBase", "Export CSV"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), _translate("AfpolGISDialogBase", "DHIS"))
-        self.btnRemoveAll.setToolTip(_translate("AfpolGISDialogBase", "Remove all published geodata and metadata"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab_6), _translate("AfpolGISDialogBase", "DHIS")
+        )
+        self.btnRemoveAll.setToolTip(
+            _translate(
+                "AfpolGISDialogBase", "Remove all published geodata and metadata"
+            )
+        )
         self.btnRemoveAll.setText(_translate("AfpolGISDialogBase", "Clear All"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), _translate("AfpolGISDialogBase", "Logs"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_8), _translate("AfpolGISDialogBase", "About"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab_7), _translate("AfpolGISDialogBase", "Logs")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tab_8),
+            _translate("AfpolGISDialogBase", "About"),
+        )
+
+
 from qgspasswordlineedit import QgsPasswordLineEdit
 from qgsspinbox import QgsSpinBox
