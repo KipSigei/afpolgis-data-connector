@@ -412,8 +412,8 @@ class AfpolGIS(QObject):
         </ul>
         <h3>Author Information</h3>
         <p>
-            <strong>Developers:</strong> Kipchirchir Cheroigin and Derrick Demeveng <br>
-            <strong>Contacts:</strong> <a href="mailto:kcheroigin@gmail.com">kcheroigin@gmail.com, demeveng@gmail.com</a>
+            <strong>Developer:</strong> Kipchirchir Cheroigin<br>
+            <strong>Contact:</strong> <a href="mailto:kcheroigin@gmail.com">kcheroigin@gmail.com</a>
         </p>
         <h3>License</h3>
         <p>
@@ -466,6 +466,22 @@ class AfpolGIS(QObject):
             <a href="https://github.com/KipSigei/afpolgis-data-connector" target="_blank">GitHub Repository</a><br>
             For issues or feature requests, open an issue in the repository.
         </p>
+
+        <h3>Acknowledgments</h3>
+        <p>
+            The development of the AfPoLGIS Data Connector was made possible through the collaborative efforts of various individuals and teams. Special thanks to <b> Derrick Demeveng </b> for his immense support and guidance during the design process, without which we could not have had an easier time in the development process. Special thanks also go to the following team for their guidance towards the improvement of the plugin:
+        </p>
+        <ul>
+            <li>Touray Kebba</li>
+            <li>John Kipterer</li>
+            <li>Mike Mwanza</li>
+            <li>Caroline Gathenji</li>
+            <li>David Collins Owuor</li>
+        </ul>
+        <p>
+            Your contributions have helped shape this tool into a valuable resource for integrating geospatial data. Thank you!
+        </p>
+
         """
 
         self.dlg.about_text.setText(html_content)
